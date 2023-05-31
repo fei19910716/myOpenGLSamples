@@ -46,6 +46,7 @@ static void RenderSceneCB()
 
 static void CreateVertexBuffer()
 {
+    // For fixed pipeline, only the [-1,1] xyz point is visible(NDC space)
     Vector3f Vertices[3];
     Vertices[0] = Vector3f(-0.8f, -0.8f, 0.0f);   // bottom left
     Vertices[1] = Vector3f(0.8f, -0.8f, 0.0f);    // bottom right
