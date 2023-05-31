@@ -1,5 +1,5 @@
 
-set(target 04-hello-triangle)
+set(target 05-uniform-variables)
 
 
 file(GLOB src_files ${CMAKE_CURRENT_SOURCE_DIR}/*.cpp)
