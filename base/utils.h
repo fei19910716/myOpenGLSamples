@@ -27,6 +27,8 @@
 
 typedef unsigned int uint;
 
+#define ZERO_MEM(a) memset(a, 0, sizeof(a))
+
 
 bool ReadFile(const char* fileName, std::string& outFile);
 

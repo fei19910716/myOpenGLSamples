@@ -6,6 +6,7 @@ set(tutorials
 03-hello-triangle-fix-pipeline
 04-hello-triangle
 05-uniform-variables
+06-translation-transformation
 )
 
 foreach(tutorial ${tutorials})
