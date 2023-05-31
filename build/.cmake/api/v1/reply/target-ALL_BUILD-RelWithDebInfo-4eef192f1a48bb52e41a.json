@@ -1,0 +1,51 @@
+{
+	"backtrace" : 0,
+	"backtraceGraph" : 
+	{
+		"commands" : [],
+		"files" : 
+		[
+			"CMakeLists.txt"
+		],
+		"nodes" : 
+		[
+			{
+				"file" : 0
+			}
+		]
+	},
+	"dependencies" : 
+	[
+		{
+			"id" : "copy_glut::@8562a80b3ce6ce112485"
+		},
+		{
+			"id" : "copy_glew::@6feb5b4ba403910dc561"
+		},
+		{
+			"id" : "base::@4506b02e7a4fef989908"
+		},
+		{
+			"id" : "01-create-window::@701674f9eb0a5407ad52"
+		},
+		{
+			"id" : "02-hello-dot-fix-pipeline::@ceb012ef4ad82b2a0be9"
+		},
+		{
+			"id" : "03-hello-triangle-fix-pipeline::@e4b7238064aa95f22498"
+		},
+		{
+			"id" : "ZERO_CHECK::@6890427a1f51a3e7e1df"
+		}
+	],
+	"id" : "ALL_BUILD::@6890427a1f51a3e7e1df",
+	"isGeneratorProvided" : true,
+	"name" : "ALL_BUILD",
+	"paths" : 
+	{
+		"build" : ".",
+		"source" : "."
+	},
+	"sources" : [],
+	"type" : "UTILITY"
+}

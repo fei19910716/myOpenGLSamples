@@ -1,0 +1,14 @@
+{
+	"backtraceGraph" : 
+	{
+		"commands" : [],
+		"files" : [],
+		"nodes" : []
+	},
+	"installers" : [],
+	"paths" : 
+	{
+		"build" : "samples/03-hello-triangle-fix-pipeline",
+		"source" : "samples/03-hello-triangle-fix-pipeline"
+	}
+}

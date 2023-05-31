@@ -1,0 +1,20 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <CustomBuild Include="C:\Workspace\myGithub\myOpenGLSamples\build\CMakeFiles\380108b24ff2b0342f637d27c8ee9ed4\glew32.dll.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Workspace\myGithub\myOpenGLSamples\build\CMakeFiles\27552d182eb153f4535f2bfb16b1587a\copy_glew.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Workspace\myGithub\myOpenGLSamples\external\glew\CMakeLists.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="C:\Workspace\myGithub\myOpenGLSamples\build\external\glew\CMakeFiles\copy_glew" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="CMake Rules">
+      <UniqueIdentifier>{5C5334A0-D419-35DB-BFA7-DA06497727AE}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

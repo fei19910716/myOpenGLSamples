@@ -1,0 +1,9 @@
+C:/Workspace/myGithub/myOpenGLSamples/build/CMakeFiles/BuildClean.dir
+C:/Workspace/myGithub/myOpenGLSamples/build/CMakeFiles/ALL_BUILD.dir
+C:/Workspace/myGithub/myOpenGLSamples/build/CMakeFiles/ZERO_CHECK.dir
+C:/Workspace/myGithub/myOpenGLSamples/build/external/glut/CMakeFiles/copy_glut.dir
+C:/Workspace/myGithub/myOpenGLSamples/build/external/glew/CMakeFiles/copy_glew.dir
+C:/Workspace/myGithub/myOpenGLSamples/build/base/CMakeFiles/base.dir
+C:/Workspace/myGithub/myOpenGLSamples/build/samples/01-create-window/CMakeFiles/01-create-window.dir
+C:/Workspace/myGithub/myOpenGLSamples/build/samples/02-hello-dot-fix-pipeline/CMakeFiles/02-hello-dot-fix-pipeline.dir
+C:/Workspace/myGithub/myOpenGLSamples/build/samples/03-hello-triangle-fix-pipeline/CMakeFiles/03-hello-triangle-fix-pipeline.dir
