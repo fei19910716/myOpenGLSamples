@@ -17,6 +17,7 @@ add_custom_command(TARGET ${target} POST_BUILD
     COMMENT
         "Custom command copy shader"
 )
+
 # add_custom_target(${target}_delete_shader ALL
 #     COMMAND
 #         ${CMAKE_COMMAND} -E remove -f ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}${CMAKE_BUILD_TYPE}/shaders/${target}.vs

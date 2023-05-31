@@ -1,16 +1,11 @@
 
 
-set(tutorials
-01-create-window
-02-hello-dot-fix-pipeline
-03-hello-triangle-fix-pipeline
-04-hello-triangle
-05-uniform-variables
-06-translation-transformation
-)
+file(GLOB dirs ${CMAKE_CURRENT_SOURCE_DIR}/*)
 
-foreach(tutorial ${tutorials})
-    add_subdirectory(${tutorial})
+foreach(dir ${dirs})
+    if(IS_DIRECTORY ${dir})
+        add_subdirectory(${dir})
+    endif()
 endforeach()
 
 
