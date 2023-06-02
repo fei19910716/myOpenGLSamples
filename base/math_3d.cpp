@@ -8,6 +8,64 @@ inline Vector3f::Vector3f(const Vector4f& v)
     z = v.z;
 }
 
+Vector3f Vector3f::Cross(const Vector3f& v) const
+{
+    const float _x = y * v.z - z * v.y;
+    const float _y = z * v.x - x * v.z;
+    const float _z = x * v.y - y * v.x;
+
+    return Vector3f(_x, _y, _z);
+}
+
+Vector3f& Vector3f::Normalize()
+{
+    float len = Length();
+
+    assert(len != 0);
+
+    x /= len;
+    y /= len;
+    z /= len;
+
+    return *this;
+}
+
+void Vector3f::Rotate(float Angle, const Vector3f& V)
+{
+    Quaternion RotationQ(Angle, V);
+
+    Quaternion ConjugateQ = RotationQ.Conjugate();
+
+    Quaternion W = RotationQ * (*this) * ConjugateQ;
+
+    x = W.x;
+    y = W.y;
+    z = W.z;
+}
+
+
+Vector3f Vector3f::Negate() const
+{
+    Vector3f ret(-x, -y, -z);
+    return ret;
+}
+
+
+Vector4f& Vector4f::Normalize()
+{
+    float len = Length();
+
+    assert(len != 0);
+
+    x /= len;
+    y /= len;
+    z /= len;
+    w /= len;
+
+    return *this;
+}
+
+
 
 Quaternion::Quaternion(float Angle, const Vector3f& V)
 {
@@ -206,8 +264,10 @@ void Matrix4f::InitTranslationTransform(const Vector3f& Pos)
     InitTranslationTransform(Pos.x, Pos.y, Pos.z);
 }
 
-
-void Matrix4f::InitCameraTransform(const Vector3f& Target, const Vector3f& Up)
+/**
+ * 相机的LookAt矩阵
+*/
+void Matrix4f::InitCameraLookAtTransform(const Vector3f& Target, const Vector3f& Up)
 {
     Vector3f N = Target;
     N.Normalize();
@@ -234,11 +294,14 @@ void Matrix4f::InitCameraTransform(const Vector3f& Pos, const Vector3f& Target, 
     CameraTranslation.InitTranslationTransform(-Pos.x, -Pos.y, -Pos.z);
 
     Matrix4f CameraRotateTrans;
-    CameraRotateTrans.InitCameraTransform(Target, Up);
+    CameraRotateTrans.InitCameraLookAtTransform(Target, Up);
 
     *this = CameraRotateTrans * CameraTranslation;
 }
 
+/**
+ * 根据视椎体计算透视矩阵
+*/
 void Matrix4f::InitPersProjTransform(const PersProjInfo& p)
 {
     float ar         = p.Height / p.Width;

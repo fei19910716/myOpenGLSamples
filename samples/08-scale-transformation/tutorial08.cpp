@@ -60,7 +60,7 @@ static void CombiningTransformationsExample1()
                      0.0f,  0.0f,  0.0f,  1.0f);
 
     static float Loc = 0.0f;
-    static float Delta = 0.01f;
+    static float Delta = 0.001f;
 
     Loc += Delta;
     if ((Loc >= 0.5f) || (Loc <= -0.5f)) {
@@ -116,8 +116,8 @@ static void RenderSceneCB()
     glClear(GL_COLOR_BUFFER_BIT);
 
     ScalingExample();
-    //CombiningTransformationsExample1();
-    //CombiningTransformationsExample2();
+    // CombiningTransformationsExample1();
+    // CombiningTransformationsExample2();
 
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
 

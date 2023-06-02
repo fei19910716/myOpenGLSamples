@@ -484,7 +484,7 @@ public:
     void InitTranslationTransform(float x, float y, float z);
     void InitTranslationTransform(const Vector3f& Pos);
 
-    void InitCameraTransform(const Vector3f& Target, const Vector3f& Up);
+    void InitCameraLookAtTransform(const Vector3f& Target, const Vector3f& Up);
     void InitCameraTransform(const Vector3f& Pos, const Vector3f& Target, const Vector3f& Up);
 
     void InitPersProjTransform(const PersProjInfo& p);
