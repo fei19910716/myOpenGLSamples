@@ -27,7 +27,11 @@ Camera::Camera(int WindowWidth, int WindowHeight)
     m_windowWidth  = WindowWidth;
     m_windowHeight = WindowHeight;
     m_pos          = Vector3f(0.0f, 0.0f, 5.0f);
+<<<<<<< HEAD
     m_target       = Vector3f(0.0f, 0.0f, -1.0f);
+=======
+    m_target       = Vector3f(0.0f, 0.0f, 1.0f);
+>>>>>>> 6b2c87c410cc66648c6d83c54f415108676f335f
     m_target.Normalize();
     m_up           = Vector3f(0.0f, 1.0f, 0.0f);
 
@@ -98,7 +102,10 @@ bool Camera::OnKeyboard(OGLDEV_KEY Key)
 
     switch (Key) {
 
+<<<<<<< HEAD
     // 前后移动相机
+=======
+>>>>>>> 6b2c87c410cc66648c6d83c54f415108676f335f
     case OGLDEV_KEY_UP:
         {
             m_pos += (m_target * STEP_SCALE);
@@ -112,7 +119,11 @@ bool Camera::OnKeyboard(OGLDEV_KEY Key)
             Ret = true;
         }
         break;
+<<<<<<< HEAD
     // 左右移动
+=======
+
+>>>>>>> 6b2c87c410cc66648c6d83c54f415108676f335f
     case OGLDEV_KEY_LEFT:
         {
             Vector3f Left = m_target.Cross(m_up);
@@ -132,7 +143,11 @@ bool Camera::OnKeyboard(OGLDEV_KEY Key)
             Ret = true;
         }
         break;
+<<<<<<< HEAD
     // 上下移动
+=======
+        
+>>>>>>> 6b2c87c410cc66648c6d83c54f415108676f335f
     case OGLDEV_KEY_PAGE_UP:
         m_pos.y += STEP_SCALE;
         break;

@@ -133,6 +133,7 @@ enum OGLDEV_MOUSE {
 enum OGLDEV_KEY_STATE {
     OGLDEV_KEY_STATE_PRESS,
     OGLDEV_KEY_STATE_RELEASE
+<<<<<<< HEAD
 };
 
 
@@ -188,3 +189,6 @@ static OGLDEV_KEY GLUTKeyToOGLDEVKey(uint Key)
 
     return OGLDEV_KEY_UNDEFINED;
 }
+=======
+};
+>>>>>>> 6b2c87c410cc66648c6d83c54f415108676f335f

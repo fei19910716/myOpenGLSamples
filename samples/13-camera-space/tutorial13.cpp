@@ -51,7 +51,11 @@ static void _RenderSceneCB()
 
     Pipeline p;
     p.Rotate(0.0f, Scale, 0.0f);
+<<<<<<< HEAD
     p.WorldPos(0.0f, 0.0f, 1.0f);
+=======
+    p.WorldPos(0.0f, 0.0f, -6.0f);
+>>>>>>> 6b2c87c410cc66648c6d83c54f415108676f335f
     p.SetCamera(*pGameCamera);
     p.SetPerspectiveProj(gPersProjInfo);
 
