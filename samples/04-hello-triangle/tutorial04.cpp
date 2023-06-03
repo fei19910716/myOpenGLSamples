@@ -20,8 +20,8 @@
 
 #include <stdio.h>
 #include <string>
-#include <glew.h>
-#include <freeglut.h>
+#include <glew/glew.h>
+#include <glut/freeglut.h>
 
 #include "base/math_3d.h"
 #include "base/utils.h"

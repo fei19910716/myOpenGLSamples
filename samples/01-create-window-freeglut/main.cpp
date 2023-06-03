@@ -18,7 +18,7 @@
     Tutorial 01 - Create a window
 */
 
-#include <freeglut.h>
+#include <glut/freeglut.h>
 #include <stdio.h>
 
 

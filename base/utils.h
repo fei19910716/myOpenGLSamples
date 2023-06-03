@@ -25,7 +25,20 @@
 #include <stdio.h>
 #include <string>
 
-typedef unsigned int uint;
+#include "dev_types.h"
+
+#ifdef _WIN64
+#define SNPRINTF _snprintf_s
+#define VSNPRINTF vsnprintf_s
+#define RANDOM rand
+#define SRANDOM srand((unsigned)time(NULL))
+#pragma warning (disable: 4566)
+#else
+#define SNPRINTF snprintf
+#define VSNPRINTF vsnprintf
+#define RANDOM random
+#define SRANDOM srandom(getpid())
+#endif
 
 #define ZERO_MEM(a) memset(a, 0, sizeof(a))
 
@@ -36,3 +49,6 @@ bool ReadFile(const char* fileName, std::string& outFile);
 
 void FileError(const char* pFileName, uint line, const char* pErrorMsg);
 #define FILE_ERROR(ErrorMsg) FileError(__FILE__, __LINE__, ErrorMsg);
+
+void OgldevError(const char* pFileName, uint line, const char* msg, ... );
+#define OGLDEV_ERROR(msg, ...) OgldevError(__FILE__, __LINE__, msg, __VA_ARGS__)

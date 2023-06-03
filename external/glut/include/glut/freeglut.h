@@ -2,7 +2,7 @@
 #define  __FREEGLUT_H__
 
 /*
- * freeglut.h
+ * glut/freeglut.h
  *
  * The freeglut library include file
  *

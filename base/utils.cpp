@@ -63,3 +63,21 @@ void FileError(const char* pFileName, uint line, const char* pErrorMsg)
     fprintf(stderr, "%s:%d: unable to open file `%s`\n", pFileName, line, pErrorMsg);
 #endif
 }
+
+
+void OgldevError(const char* pFileName, uint line, const char* format, ...)
+{
+    char msg[1000];
+    va_list args;
+    va_start(args, format);
+    VSNPRINTF(msg, sizeof(msg), format, args);
+    va_end(args);
+
+#ifdef _WIN32
+    char msg2[1000];
+    _snprintf_s(msg2, sizeof(msg2), "%s:%d: %s", pFileName, line, msg);
+    MessageBoxA(NULL, msg2, NULL, 0);
+#else
+    fprintf(stderr, "%s:%d - %s", pFileName, line, msg);
+#endif
+}

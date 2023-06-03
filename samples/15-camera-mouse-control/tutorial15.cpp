@@ -22,9 +22,8 @@
 #include <string.h>
 #include <math.h>
 
-#include <glew.h>
-#include <freeglut.h>
-
+#define BACKEND_TYPE_GLUT
+#include "base/dev_backend.h"
 #include "base/pipeline.h"
 #include "base/keys.h"
 
@@ -41,65 +40,68 @@ PersProjInfo gPersProjInfo;
 const char* pVSFileName = "shaders/15-camera-mouse-control.vs";
 const char* pFSFileName = "shaders/15-camera-mouse-control.fs";
 
-static void _RenderSceneCB()
-{
-    pGameCamera->OnRender();
+class CallBacks: public ICallbacks{
+    public:
+    void RenderSceneCB() override
+    {
+        pGameCamera->OnRender();
 
-    glClear(GL_COLOR_BUFFER_BIT);
+        glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+        glClear(GL_COLOR_BUFFER_BIT);
 
-    static float Scale = 0.0f;
+        static float Scale = 0.0f;
 
-    Scale += 0.1f;
+        Scale += 0.1f;
 
-    Pipeline p;
-    p.Rotate(0.0f, Scale, 0.0f);
-    p.WorldPos(0.0f, 0.0f, 3.0f);
-    p.SetCamera(*pGameCamera);
-    p.SetPerspectiveProj(gPersProjInfo);
+        Pipeline p;
+        p.Rotate(0.0f, Scale, 0.0f);
+        p.WorldPos(0.0f, 0.0f, 3.0f);
+        p.SetCamera(*pGameCamera);
+        p.SetPerspectiveProj(gPersProjInfo);
 
-    glUniformMatrix4fv(gWVPLocation, 1, GL_TRUE, (const GLfloat*)p.GetWVPTrans());
+        glUniformMatrix4fv(gWVPLocation, 1, GL_TRUE, (const GLfloat*)p.GetWVPTrans());
 
-    glEnableVertexAttribArray(0);
-    glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, IBO);
+        glEnableVertexAttribArray(0);
+        glBindBuffer(GL_ARRAY_BUFFER, VBO);
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, IBO);
 
-    glDrawElements(GL_TRIANGLES, 12, GL_UNSIGNED_INT, 0);
+        glDrawElements(GL_TRIANGLES, 12, GL_UNSIGNED_INT, 0);
 
-    glDisableVertexAttribArray(0);
+        glDisableVertexAttribArray(0);
 
-    glutSwapBuffers();
-}
-
-
-static void _SpecialKeyboardCB(int Key, int x, int y)
-{
-    OGLDEV_KEY OgldevKey = GLUTKeyToOGLDEVKey(Key);
-    pGameCamera->OnKeyboard(OgldevKey);
-}
-
-
-static void _KeyboardCB(unsigned char Key, int x, int y)
-{
-    switch (Key) {
-        case 'q':
-            glutLeaveMainLoop();
+        OgldevBackendSwapBuffers();
     }
-}
 
-static void _PassiveMouseCB(int x, int y)
-{
-    pGameCamera->OnMouse(x, y);
-}
+    void KeyboardCB(OGLDEV_KEY OgldevKey, OGLDEV_KEY_STATE OgldevKeyState = OGLDEV_KEY_STATE_PRESS) override {
+        switch (OgldevKey)
+        {
+            case OGLDEV_KEY_ESCAPE:
+                OgldevBackendLeaveMainLoop();
+                break;
+            
+            default:
+                pGameCamera->OnKeyboard(OgldevKey);
+                break;
+        }
+    }
+    // 鼠标按键callback
+    void MouseCB(OGLDEV_MOUSE Button, OGLDEV_KEY_STATE State, int x, int y) override {
 
-static void InitializeGlutCallbacks()
-{
-    glutDisplayFunc(_RenderSceneCB);
-    glutIdleFunc(_RenderSceneCB);
-    glutSpecialFunc(_SpecialKeyboardCB);
-    glutPassiveMotionFunc(_PassiveMouseCB);
-    glutKeyboardFunc(_KeyboardCB);
-}
+    }
+    // 鼠标移动callback
+    void PassiveMouseCB(int x, int y) override {
+        pGameCamera->OnMouse(x, y);
+    }
+
+    void FramebufferSizeCB(int width, int height) override
+    {
+        // make sure the viewport matches the new window dimensions; note that width and 
+        // height will be significantly larger than specified on retina displays.
+        glViewport(0, 0, width, height);
+    }
+};
+
 
 static void CreateVertexBuffer()
 {
@@ -202,33 +204,11 @@ static void CompileShaders()
 
 int main(int argc, char** argv)
 {
-    glutInit(&argc, argv);
-    glutInitDisplayMode(GLUT_DOUBLE|GLUT_RGBA|GLUT_DEPTH);
-    glutInitWindowSize(WINDOW_WIDTH, WINDOW_HEIGHT);
-    glutInitWindowPosition(100, 100);
-    glutCreateWindow("Tutorial 15");
-
-    char game_mode_string[64];
-    snprintf(game_mode_string, sizeof(game_mode_string), "%dx%d@60", WINDOW_WIDTH, WINDOW_HEIGHT);
-    glutGameModeString(game_mode_string);
-    // glutEnterGameMode();
-
-    InitializeGlutCallbacks();
-
-    pGameCamera = new Camera(WINDOW_WIDTH, WINDOW_HEIGHT);
-
-    // Must be done after glut is initialized!
-    GLenum res = glewInit();
-    if (res != GLEW_OK) {
-      fprintf(stderr, "Error: '%s'\n", glewGetErrorString(res));
-      return 1;
-    }
-
-    glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+    OgldevBackendInit(OGLDEV_BACKEND_TYPE_GLUT,argc,argv,false,false);
+    OgldevBackendCreateWindow(WINDOW_WIDTH,WINDOW_HEIGHT,false,"Tutorial 14");
 
     CreateVertexBuffer();
     CreateIndexBuffer();
-
     CompileShaders();
 
     gPersProjInfo.FOV = 60.0f;
@@ -237,7 +217,8 @@ int main(int argc, char** argv)
     gPersProjInfo.zNear = 1.0f;
     gPersProjInfo.zFar = 100.0f;
 
-    glutMainLoop();
+    pGameCamera = new Camera(WINDOW_WIDTH, WINDOW_HEIGHT);
+    OgldevBackendRun(new CallBacks);
 
     return 0;
 }

@@ -22,8 +22,8 @@
 #include <string.h>
 
 #include <math.h>
-#include <glew.h>
-#include <freeglut.h>
+#include <glew/glew.h>
+#include <glut/freeglut.h>
 
 #include "base/math_3d.h"
 
