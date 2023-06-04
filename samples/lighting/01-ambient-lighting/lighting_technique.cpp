@@ -29,11 +29,11 @@ bool LightingTechnique::Init()
         return false;
     }
 
-    if (!AddShader(GL_VERTEX_SHADER, "lighting.vs")) {
+    if (!AddShader(GL_VERTEX_SHADER, "shaders/lighting/01-ambient-lighting.vs")) {
         return false;
     }
 
-    if (!AddShader(GL_FRAGMENT_SHADER, "lighting.fs")) {
+    if (!AddShader(GL_FRAGMENT_SHADER, "shaders/lighting/01-ambient-lighting.fs")) {
         return false;
     }
 

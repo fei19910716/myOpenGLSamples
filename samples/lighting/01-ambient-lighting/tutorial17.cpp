@@ -22,10 +22,11 @@
 
 #include "base/pipeline.h"
 #include "base/math_3d.h"
-#include "base/devbackend.h"
+#include "base/dev_backend.h"
 #include "base/texture.h"
-#include "lighting_technique.h"
 #include "base/app.h"
+#include "lighting_technique.h"
+
 
 #define WINDOW_WIDTH  1920
 #define WINDOW_HEIGHT 1200
@@ -90,7 +91,7 @@ public:
 
         m_pEffect->SetTextureUnit(0);
 
-        m_pTexture = new Texture(GL_TEXTURE_2D, "../Content/test.png");
+        m_pTexture = new Texture(GL_TEXTURE_2D, "images/test.png");
 
         if (!m_pTexture->Load()) {
             return false;
@@ -101,7 +102,7 @@ public:
 
     void Run()
     {
-        GLUTBackendRun(this);
+        OgldevBackendRun(this);
     }
 
     virtual void RenderSceneCB()
@@ -132,7 +133,7 @@ public:
         glDisableVertexAttribArray(0);
         glDisableVertexAttribArray(1);
 
-        glutSwapBuffers();
+        OgldevBackendSwapBuffers();
     }
 
     virtual void KeyboardCB(OGLDEV_KEY OgldevKey, OGLDEV_KEY_STATE State)
@@ -140,7 +141,7 @@ public:
         switch (OgldevKey) {
             case OGLDEV_KEY_ESCAPE:
             case OGLDEV_KEY_q:
-                    GLUTBackendLeaveMainLoop();
+                    OgldevBackendLeaveMainLoop();
                     break;
 
             case OGLDEV_KEY_a:
@@ -198,9 +199,9 @@ private:
 
 int main(int argc, char** argv)
 {
-    GLUTBackendInit(argc, argv, false, false);
+    OgldevBackendInit(argc, argv, false, false);
 
-    if (!GLUTBackendCreateWindow(WINDOW_WIDTH, WINDOW_HEIGHT, false, "Tutorial 17")) {
+    if (!OgldevBackendCreateWindow(WINDOW_WIDTH, WINDOW_HEIGHT, false, "Tutorial 17")) {
         return 1;
     }
 

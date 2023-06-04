@@ -174,7 +174,7 @@ void GLFWBackendRun(ICallbacks* pCallbacks)
         exit(1);
     }
 
-    glFrontFace(GL_CCW);
+    glFrontFace(GL_CW);
     glCullFace(GL_BACK);
     glEnable(GL_CULL_FACE);
 

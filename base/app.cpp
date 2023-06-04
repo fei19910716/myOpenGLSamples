@@ -17,7 +17,7 @@
 */
 
 
-#include "ogldev_app.h"
+#include "app.h"
 
 #include "utils.h"
 

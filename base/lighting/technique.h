@@ -1,6 +1,6 @@
 /*
 
-	Copyright 2011 Etay Meiri
+        Copyright 2011 Etay Meiri
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -16,33 +16,41 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef LIGHTING_TECHNIQUE_17_H
-#define	LIGHTING_TECHNIQUE_17_H
+#ifndef TECHNIQUE_H
+#define TECHNIQUE_H
 
+#include <list>
 
-#include "base/math_3d.h"
-#include "base/lighting/lights_common.h"
-#include "base/lighting/technique.h"
+#include "base/dev_gl.h"
 
-class LightingTechnique : public Technique
+class Technique
 {
 public:
 
-    LightingTechnique();
+    Technique();
+
+    virtual ~Technique();
 
     virtual bool Init();
 
-    void SetWVP(const Matrix4f& WVP);
-    void SetTextureUnit(unsigned int TextureUnit);
-    void SetDirectionalLight(const DirectionalLight& Light);
+    void Enable();
+
+    GLuint GetProgram() const { return m_shaderProg; }
+
+protected:
+
+    bool AddShader(GLenum ShaderType, const char* pFilename);
+
+    bool Finalize();
+
+    GLint GetUniformLocation(const char* pUniformName);
+
+    GLuint m_shaderProg = 0;
 
 private:
 
-    GLuint m_WVPLocation;
-    GLuint m_samplerLocation;
-    GLuint m_dirLightColorLocation;
-    GLuint m_dirLightAmbientIntensityLocation;
+    typedef std::list<GLuint> ShaderObjList;
+    ShaderObjList m_shaderObjList;
 };
 
-
-#endif	/* LIGHTING_TECHNIQUE_H */
+#endif  /* TECHNIQUE_H */

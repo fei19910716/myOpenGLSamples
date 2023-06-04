@@ -53,3 +53,6 @@ void FileError(const char* pFileName, uint line, const char* pErrorMsg);
 
 void OgldevError(const char* pFileName, uint line, const char* msg, ... );
 #define OGLDEV_ERROR(msg, ...) OgldevError(__FILE__, __LINE__, msg, __VA_ARGS__)
+
+#define GLCheckError() (glGetError() == GL_NO_ERROR)
+#define INVALID_UNIFORM_LOCATION 0xffffffff
