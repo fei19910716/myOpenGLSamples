@@ -23,6 +23,9 @@
 
 #include "base/dev_gl.h"
 
+/**
+ * Technique represents the shader program 
+*/
 class Technique
 {
 public:
@@ -33,6 +36,7 @@ public:
 
     virtual bool Init();
 
+    // Use the program
     void Enable();
 
     GLuint GetProgram() const { return m_shaderProg; }
@@ -41,6 +45,7 @@ protected:
 
     bool AddShader(GLenum ShaderType, const char* pFilename);
 
+    // Link the program
     bool Finalize();
 
     GLint GetUniformLocation(const char* pUniformName);

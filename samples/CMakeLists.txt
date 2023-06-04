@@ -10,7 +10,7 @@ if(BUILD_ALL_SAMPLES)
         endif()
     endforeach()
 else()
-    add_subdirectory(basic)
+    # add_subdirectory(basic)
     add_subdirectory(lighting)
 endif()
 

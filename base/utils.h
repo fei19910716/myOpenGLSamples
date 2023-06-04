@@ -56,3 +56,5 @@ void OgldevError(const char* pFileName, uint line, const char* msg, ... );
 
 #define GLCheckError() (glGetError() == GL_NO_ERROR)
 #define INVALID_UNIFORM_LOCATION 0xffffffff
+
+#define ARRAY_SIZE_IN_ELEMENTS(a) (sizeof(a)/sizeof(a[0]))

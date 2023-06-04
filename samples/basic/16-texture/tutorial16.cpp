@@ -85,7 +85,7 @@ class CallBacks: public ICallbacks{
         glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), 0);
         glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (const GLvoid*)12);
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, IBO);
-        pTexture->Bind(GL_TEXTURE0);
+        pTexture->Bind(GL_TEXTURE1);
         glDrawElements(GL_TRIANGLES, 12, GL_UNSIGNED_INT, 0);
 
         glDisableVertexAttribArray(0);
@@ -244,7 +244,7 @@ int main(int argc, char** argv)
     gPersProjInfo.zFar = 100.0f;
 
     pGameCamera = new Camera(WINDOW_WIDTH, WINDOW_HEIGHT);
-    glUniform1i(gSampler, 0);
+    glUniform1i(gSampler, 1);
 
     pTexture = new Texture(GL_TEXTURE_2D, "images/test.png");
 

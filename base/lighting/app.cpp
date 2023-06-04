@@ -19,7 +19,7 @@
 
 #include "app.h"
 
-#include "utils.h"
+#include "base/utils.h"
 
 #ifndef _WIN32
 Markup sMarkup = { (char*)"Arial", 64, 1, 0, 0.0, 0.0,
@@ -41,7 +41,9 @@ OgldevApp::OgldevApp()
 }
 
 
-
+/**
+ * caculate the frame count per second(fps)
+*/
 void OgldevApp::CalcFPS()
 {
     m_frameCount++;
@@ -66,6 +68,9 @@ void OgldevApp::RenderFPS()
 #endif
 }
 
+/**
+ * app total running time since start
+*/
 float OgldevApp::GetRunningTime()
 {
     float RunningTime = (float)((double)GetCurrentTimeMillis() - (double)m_startTime) / 1000.0f;

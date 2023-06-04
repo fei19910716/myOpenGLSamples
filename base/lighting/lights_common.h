@@ -36,8 +36,6 @@ public:
         AmbientIntensity = 0.0f;
         DiffuseIntensity = 0.0f;
     }
-        
-   // virtual void AddToATB(TwBar *bar);
 };
 
 
@@ -50,8 +48,6 @@ public:
     {
         Direction = Vector3f(0.0f, 0.0f, 0.0f);
     }
-    
-   // virtual void AddToATB(TwBar *bar);
 };
 
 
@@ -80,8 +76,6 @@ public:
     {
         Position = Vector3f(0.0f, 0.0f, 0.0f);
     }
-    
-  //  virtual void AddToATB(TwBar *bar);
 };
 
 
@@ -96,8 +90,6 @@ public:
         Direction = Vector3f(0.0f, 0.0f, 0.0f);
         Cutoff = 0.0f;
     }
-    
-  //  virtual void AddToATB(TwBar *bar);
 };
 
 

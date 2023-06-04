@@ -46,10 +46,10 @@ bool LightingTechnique::Init()
     m_dirLightColorLocation = GetUniformLocation("gDirectionalLight.Color");
     m_dirLightAmbientIntensityLocation = GetUniformLocation("gDirectionalLight.AmbientIntensity");
 
-    if (m_dirLightAmbientIntensityLocation == 0xFFFFFFFF ||
-        m_WVPLocation == 0xFFFFFFFF ||
-        m_samplerLocation == 0xFFFFFFFF ||
-        m_dirLightColorLocation == 0xFFFFFFFF)
+    if (m_dirLightAmbientIntensityLocation == INVALID_UNIFORM_LOCATION ||
+        m_WVPLocation == INVALID_UNIFORM_LOCATION ||
+        m_samplerLocation == INVALID_UNIFORM_LOCATION ||
+        m_dirLightColorLocation == INVALID_UNIFORM_LOCATION)
     {
         return false;
     }

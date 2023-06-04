@@ -15,16 +15,19 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-    Tutorial 17 - Ambient Lighting
+    Tutorial 19 - Specular Lighting
 */
 
 #include <math.h>
+#include <GL/glew.h>
+#include <GL/freeglut.h>
 
-#include "base/pipeline.h"
-#include "base/math_3d.h"
-#include "base/dev_backend.h"
-#include "base/texture.h"
-#include "base/lighting/app.h"
+#include "ogldev_pipeline.h"
+#include "ogldev_math_3d.h"
+#include "ogldev_glut_backend.h"
+#include "ogldev_texture.h"
+#include "ogldev_lights_common.h"
+#include "ogldev_app.h"
 #include "lighting_technique.h"
 
 
@@ -35,6 +38,7 @@ struct Vertex
 {
     Vector3f m_pos;
     Vector2f m_tex;
+    Vector3f m_normal;
 
     Vertex() {}
 
@@ -42,22 +46,24 @@ struct Vertex
     {
         m_pos = pos;
         m_tex = tex;
+        m_normal = Vector3f(0.0f, 0.0f, 0.0f);
     }
 };
 
-
-class Tutorial17 : public ICallbacks, public OgldevApp
+class Tutorial19 : public ICallbacks, public OgldevApp
 {
 public:
 
-    Tutorial17()
+    Tutorial19()
     {
         m_pGameCamera = NULL;
         m_pTexture = NULL;
         m_pEffect = NULL;
-        
+        m_scale = 0.0f;
         m_directionalLight.Color = Vector3f(1.0f, 1.0f, 1.0f);
-        m_directionalLight.AmbientIntensity = 0.5f;
+        m_directionalLight.AmbientIntensity = 0.00f;
+        m_directionalLight.DiffuseIntensity = 0.2f;
+        m_directionalLight.Direction = Vector3f(0.0f, 0.0, 1.0);
 
         m_persProjInfo.FOV = 60.0f;
         m_persProjInfo.Height = WINDOW_HEIGHT;
@@ -66,7 +72,7 @@ public:
         m_persProjInfo.zFar = 100.0f;
     }
 
-    ~Tutorial17()
+    ~Tutorial19()
     {
         delete m_pEffect;
         delete m_pGameCamera;
@@ -75,15 +81,25 @@ public:
 
     bool Init()
     {
-        m_pGameCamera = new Camera(WINDOW_WIDTH, WINDOW_HEIGHT);
+        Vector3f Pos(0.0f, 0.0f, -3.0f);
+        Vector3f Target(0.0f, 0.0f, 1.0f);
+        Vector3f Up(0.0, 1.0f, 0.0f);
+        m_pGameCamera = new Camera(WINDOW_WIDTH, WINDOW_HEIGHT, Pos, Target, Up);
 
-        CreateVertexBuffer();
-        CreateIndexBuffer();
+        unsigned int Indices[] = { 0, 3, 1,
+                                   1, 3, 2,
+                                   2, 3, 0,
+                                   1, 2, 0 };
+
+        CreateIndexBuffer(Indices, sizeof(Indices));
+
+        CreateVertexBuffer(Indices, ARRAY_SIZE_IN_ELEMENTS(Indices));
 
         m_pEffect = new LightingTechnique();
 
         if (!m_pEffect->Init())
         {
+            printf("Error initializing the lighting technique\n");
             return false;
         }
 
@@ -91,7 +107,7 @@ public:
 
         m_pEffect->SetTextureUnit(0);
 
-        m_pTexture = new Texture(GL_TEXTURE_2D, "images/test.png");
+        m_pTexture = new Texture(GL_TEXTURE_2D, "../Content/test.png");
 
         if (!m_pTexture->Load()) {
             return false;
@@ -102,7 +118,7 @@ public:
 
     void Run()
     {
-        OgldevBackendRun(this);
+        GLUTBackendRun(this);
     }
 
     virtual void RenderSceneCB()
@@ -111,38 +127,46 @@ public:
 
         glClear(GL_COLOR_BUFFER_BIT);
 
-        static int m_scale = 0.0f;
         m_scale += 0.1f;
 
         Pipeline p;
         p.Rotate(0.0f, m_scale, 0.0f);
-        p.WorldPos(0.0f, 0.0f, 3.0f);
+        p.WorldPos(0.0f, 0.0f, 1.0f);
         p.SetCamera(m_pGameCamera->GetPos(), m_pGameCamera->GetTarget(), m_pGameCamera->GetUp());
         p.SetPerspectiveProj(m_persProjInfo);
         m_pEffect->SetWVP(p.GetWVPTrans());
+        const Matrix4f& WorldTransformation = p.GetWorldTrans();
+        m_pEffect->SetWorldMatrix(WorldTransformation);
         m_pEffect->SetDirectionalLight(m_directionalLight);
+        m_pEffect->SetEyeWorldPos(m_pGameCamera->GetPos());
+        m_pEffect->SetMatSpecularIntensity(1.0f);
+        m_pEffect->SetMatSpecularPower(32);
 
         glEnableVertexAttribArray(0);
         glEnableVertexAttribArray(1);
+        glEnableVertexAttribArray(2);
         glBindBuffer(GL_ARRAY_BUFFER, m_VBO);
         glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), 0);
         glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (const GLvoid*)12);
+        glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (const GLvoid*)20);
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_IBO);
         m_pTexture->Bind(GL_TEXTURE0);
         glDrawElements(GL_TRIANGLES, 12, GL_UNSIGNED_INT, 0);
 
         glDisableVertexAttribArray(0);
         glDisableVertexAttribArray(1);
+        glDisableVertexAttribArray(2);
 
-        OgldevBackendSwapBuffers();
+        glutSwapBuffers();
     }
+
 
     virtual void KeyboardCB(OGLDEV_KEY OgldevKey, OGLDEV_KEY_STATE State)
     {
         switch (OgldevKey) {
             case OGLDEV_KEY_ESCAPE:
             case OGLDEV_KEY_q:
-                    OgldevBackendLeaveMainLoop();
+                    GLUTBackendLeaveMainLoop();
                     break;
 
             case OGLDEV_KEY_a:
@@ -151,6 +175,14 @@ public:
 
             case OGLDEV_KEY_s:
                 m_directionalLight.AmbientIntensity -= 0.05f;
+                break;
+
+            case OGLDEV_KEY_z:
+                m_directionalLight.DiffuseIntensity += 0.05f;
+                break;
+
+            case OGLDEV_KEY_x:
+                m_directionalLight.DiffuseIntensity -= 0.05f;
                 break;
         }
     }
@@ -163,36 +195,59 @@ public:
 
 private:
 
-    void CreateVertexBuffer()
+    void CalcNormals(const unsigned int* pIndices, unsigned int IndexCount,
+                     Vertex* pVertices, unsigned int VertexCount)
+    {
+        // Accumulate each triangle normal into each of the triangle vertices
+        for (unsigned int i = 0 ; i < IndexCount ; i += 3) {
+            unsigned int Index0 = pIndices[i];
+            unsigned int Index1 = pIndices[i + 1];
+            unsigned int Index2 = pIndices[i + 2];
+            Vector3f v1 = pVertices[Index1].m_pos - pVertices[Index0].m_pos;
+            Vector3f v2 = pVertices[Index2].m_pos - pVertices[Index0].m_pos;
+            Vector3f Normal = v1.Cross(v2);
+            Normal.Normalize();
+
+            pVertices[Index0].m_normal += Normal;
+            pVertices[Index1].m_normal += Normal;
+            pVertices[Index2].m_normal += Normal;
+        }
+
+        // Normalize all the vertex normals
+        for (unsigned int i = 0 ; i < VertexCount ; i++) {
+            pVertices[i].m_normal.Normalize();
+        }
+    }
+
+    void CreateVertexBuffer(const unsigned int* pIndices, unsigned int IndexCount)
     {
         Vertex Vertices[4] = { Vertex(Vector3f(-1.0f, -1.0f, 0.5773f), Vector2f(0.0f, 0.0f)),
                                Vertex(Vector3f(0.0f, -1.0f, -1.15475f), Vector2f(0.5f, 0.0f)),
                                Vertex(Vector3f(1.0f, -1.0f, 0.5773f),  Vector2f(1.0f, 0.0f)),
                                Vertex(Vector3f(0.0f, 1.0f, 0.0f),      Vector2f(0.5f, 1.0f)) };
 
+        unsigned int VertexCount = ARRAY_SIZE_IN_ELEMENTS(Vertices);
+
+        CalcNormals(pIndices, IndexCount, Vertices, VertexCount);
+
         glGenBuffers(1, &m_VBO);
         glBindBuffer(GL_ARRAY_BUFFER, m_VBO);
         glBufferData(GL_ARRAY_BUFFER, sizeof(Vertices), Vertices, GL_STATIC_DRAW);
     }
 
-    void CreateIndexBuffer()
+    void CreateIndexBuffer(const unsigned int* pIndices, unsigned int SizeInBytes)
     {
-        unsigned int Indices[] = { 0, 3, 1,
-                                   1, 3, 2,
-                                   2, 3, 0,
-                                   1, 2, 0 };
-
         glGenBuffers(1, &m_IBO);
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_IBO);
-        glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(Indices), Indices, GL_STATIC_DRAW);
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, SizeInBytes, pIndices, GL_STATIC_DRAW);
     }
 
-    GLuint m_VBO,m_IBO;
-
+    GLuint m_VBO;
+    GLuint m_IBO;
     LightingTechnique* m_pEffect;
     Texture* m_pTexture;
     Camera* m_pGameCamera;
-
+    float m_scale;
     DirectionalLight m_directionalLight;
     PersProjInfo m_persProjInfo;
 };
@@ -200,13 +255,14 @@ private:
 
 int main(int argc, char** argv)
 {
-    OgldevBackendInit(argc, argv, false, false);
+//    Magick::InitializeMagick(*argv);
+    GLUTBackendInit(argc, argv, false, false);
 
-    if (!OgldevBackendCreateWindow(WINDOW_WIDTH, WINDOW_HEIGHT, false, "Tutorial 17")) {
+    if (!GLUTBackendCreateWindow(WINDOW_WIDTH, WINDOW_HEIGHT, false, "Tutorial 19")) {
         return 1;
     }
 
-    Tutorial17* pApp = new Tutorial17();
+    Tutorial19* pApp = new Tutorial19();
 
     if (!pApp->Init()) {
         return 1;
