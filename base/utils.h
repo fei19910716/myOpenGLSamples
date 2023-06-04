@@ -44,6 +44,7 @@
 
 
 bool ReadFile(const char* fileName, std::string& outFile);
+long long GetCurrentTimeMillis();
 
 
 
