@@ -24,19 +24,13 @@
 #include "dev_types.h"
 #include "dev_callbacks.h"
 
-#ifdef BACKEND_TYPE_GLUT
-#include <glew/glew.h>
-#elif defined(BACKEND_TYPE_GLFW)
-#include <glad/glad.h>
-#endif
-
 enum OGLDEV_BACKEND_TYPE {
     OGLDEV_BACKEND_TYPE_GLUT,
     OGLDEV_BACKEND_TYPE_GLFW
 };
 
 
-void OgldevBackendInit(OGLDEV_BACKEND_TYPE BackendType, int argc, char** argv, bool WithDepth, bool WithStencil);
+void OgldevBackendInit(int argc, char** argv, bool WithDepth, bool WithStencil);
 
 void OgldevBackendTerminate();
 

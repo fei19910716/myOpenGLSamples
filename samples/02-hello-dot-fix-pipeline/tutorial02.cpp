@@ -19,29 +19,45 @@
 */
 
 #include <stdio.h>
-#include <glew/glew.h>
-#include <glut/freeglut.h>
+
+#include "base/dev_gl.h"
+#include "base/dev_backend.h"
 #include "base/math_3d.h"
+
+#define WINDOW_WIDTH 800
+#define WINDOW_HEIGHT 600
 
 GLuint VBO;
 
-static void RenderSceneCB()
-{
-    glClearColor(0.2f, 0.1f, 0.3f, 1.0f);
-    glClear(GL_COLOR_BUFFER_BIT);
+class CallBacks: public ICallbacks{
+    public:
+    void RenderSceneCB() override
+    {
+        // render
+        // ------
+        glClearColor(0.2f, 0.1f, 0.3f, 1.0f);
+        glClear(GL_COLOR_BUFFER_BIT);
 
-    glBindBuffer(GL_ARRAY_BUFFER, VBO);
+        glBindBuffer(GL_ARRAY_BUFFER, VBO);
 
-    glEnableVertexAttribArray(0);
+        glEnableVertexAttribArray(0);
 
-    glVertexAttribPointer(0/*index*/, 3/*size*/, GL_FLOAT/*type*/, GL_FALSE/*normalized*/, 0/*stride*/, 0/*offset*/);
+        glVertexAttribPointer(0/*index*/, 3/*size*/, GL_FLOAT/*type*/, GL_FALSE/*normalized*/, 0/*stride*/, 0/*offset*/);
 
-    glDrawArrays(GL_POINTS, 0/*first*/, 1/*count*/);
+        glDrawArrays(GL_POINTS, 0/*first*/, 1/*count*/);
 
-    glDisableVertexAttribArray(0);
+        glDisableVertexAttribArray(0);
 
-    glutSwapBuffers();
-}
+        OgldevBackendSwapBuffers();
+    }
+
+    void FramebufferSizeCB(int width, int height) override
+    {
+        // make sure the viewport matches the new window dimensions; note that width and 
+        // height will be significantly larger than specified on retina displays.
+        glViewport(0, 0, width, height);
+    }
+};
 
 
 static void CreateVertexBuffer()
@@ -52,35 +68,19 @@ static void CreateVertexBuffer()
     glGenBuffers(1, &VBO);
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
     glBufferData(GL_ARRAY_BUFFER, sizeof(Vertices), Vertices, GL_STATIC_DRAW);
-}
+};
 
 
 int main(int argc, char** argv)
 {
-    glutInit(&argc, argv);
-    glutInitDisplayMode(GLUT_DOUBLE|GLUT_RGBA|GLUT_DEPTH);
-    int width = 800;
-    int height = 600;
-    glutInitWindowSize(width, height);
-
-    int x = 200;
-    int y = 100;
-    glutInitWindowPosition(x, y);
-    int win = glutCreateWindow("Tutorial 02");
-    printf("window id: %d\n", win);
-
-    // Must be done after glut is initialized!
-    GLenum res = glewInit();
-    if (res != GLEW_OK) {
-        fprintf(stderr, "Error: '%s'\n", glewGetErrorString(res));
-        return 1;
-    }
+    OgldevBackendInit(argc,argv,true,false);
+    OgldevBackendCreateWindow(WINDOW_WIDTH,WINDOW_HEIGHT,false,"Tutorial 02");
 
     CreateVertexBuffer();
 
-    glutDisplayFunc(RenderSceneCB);
+    OgldevBackendRun(new CallBacks);
 
-    glutMainLoop();
+    OgldevBackendTerminate();
 
     return 0;
 }

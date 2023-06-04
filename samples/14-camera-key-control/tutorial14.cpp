@@ -17,16 +17,14 @@
 
     Tutorial 14 - Camera Control - Part 1
 */
-
 #include <stdio.h>
 #include <string.h>
 #include <math.h>
 
-#define BACKEND_TYPE_GLUT
+#include "base/dev_gl.h"
 #include "base/dev_backend.h"
 #include "base/pipeline.h"
 #include "base/keys.h"
-#include "base/dev_backend.h"
 
 #define WINDOW_WIDTH 800
 #define WINDOW_HEIGHT 600
@@ -194,7 +192,7 @@ static void CompileShaders()
 
 int main(int argc, char** argv)
 {
-    OgldevBackendInit(OGLDEV_BACKEND_TYPE_GLUT,argc,argv,false,false);
+    OgldevBackendInit(argc,argv,false,false);
     OgldevBackendCreateWindow(WINDOW_WIDTH,WINDOW_HEIGHT,false,"Tutorial 14");
 
     CreateVertexBuffer();

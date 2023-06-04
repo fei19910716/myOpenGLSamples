@@ -45,11 +45,11 @@ static void _RenderSceneCB()
     Scale += 0.001f;
 
     Pipeline p;
-    p.Scale(sinf(Scale * 0.1f), sinf(Scale * 0.1f), sinf(Scale * 0.1f)); // 不断放大缩小
-    p.WorldPos(sinf(Scale), 0.0f, 0.0f); // 在X方向上不断平移
-    p.Rotate(sinf(Scale) * 90.0f, sinf(Scale) * 90.0f, sinf(Scale) * 90.0f); // 指定绕XYZ轴的旋转量
+    p.Scale(sinf(Scale * 0.1f), sinf(Scale * 0.1f), sinf(Scale * 0.1f)); // scale
+    p.WorldPos(sinf(Scale), 0.0f, 0.0f); // tranlation along X
+    p.Rotate(sinf(Scale) * 90.0f, sinf(Scale) * 90.0f, sinf(Scale) * 90.0f); // rotate around XYZ
 
-    glUniformMatrix4fv(gWorldLocation, 1, GL_TRUE, (const GLfloat*)p.GetWorldTrans()); // 这里对于旋转的处理没有用四元数，可能引发万向节死锁
+    glUniformMatrix4fv(gWorldLocation, 1, GL_TRUE, (const GLfloat*)p.GetWorldTrans()); // not use quaternion，may cause dead lock
 
     glEnableVertexAttribArray(0);
     glBindBuffer(GL_ARRAY_BUFFER, VBO);

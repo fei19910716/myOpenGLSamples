@@ -231,7 +231,7 @@ void GLUTBackendRun(ICallbacks* pCallbacks)
         return;
     }
 
-    glFrontFace(GL_CW);
+    glFrontFace(GL_CCW);
     glCullFace(GL_BACK);
     glEnable(GL_CULL_FACE);
 

@@ -8,6 +8,8 @@ set(external_libs
 
     glad
     glfw
+
+    stb
 )
 
 foreach(external_lib ${external_libs})

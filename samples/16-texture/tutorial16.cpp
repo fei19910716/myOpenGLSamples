@@ -1,6 +1,6 @@
 /*
 
-        Copyright 2010 Etay Meiri
+        Copyright 2011 Etay Meiri
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -15,30 +15,48 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-    Tutorial 15 - Camera Control - Part 2
+    Tutorial 16 - Basic Texture Mapping
 */
 
 #include <stdio.h>
 #include <string.h>
 #include <math.h>
 
-#include "base/dev_gl.h"
 #include "base/dev_backend.h"
+#include "base/texture.h"
 #include "base/pipeline.h"
-#include "base/keys.h"
+#include "base/math_3d.h"
 
-#define WINDOW_WIDTH  1200
-#define WINDOW_HEIGHT 800
+
+#define WINDOW_WIDTH  1920
+#define WINDOW_HEIGHT 1200
+
+struct Vertex
+{
+    Vector3f m_pos;
+    Vector2f m_tex;
+
+    Vertex() {}
+
+    Vertex(Vector3f pos, Vector2f tex)
+    {
+        m_pos = pos;
+        m_tex = tex;
+    }
+};
+
 
 GLuint VBO;
 GLuint IBO;
 GLuint gWVPLocation;
-
+GLuint gSampler;
+Texture* pTexture = NULL;
 Camera* pGameCamera = NULL;
 PersProjInfo gPersProjInfo;
 
-const char* pVSFileName = "shaders/15-camera-mouse-control.vs";
-const char* pFSFileName = "shaders/15-camera-mouse-control.fs";
+const char* pVSFileName = "shaders/16-texture.vs";
+const char* pFSFileName = "shaders/16-texture.fs";
+
 
 class CallBacks: public ICallbacks{
     public:
@@ -62,13 +80,16 @@ class CallBacks: public ICallbacks{
         glUniformMatrix4fv(gWVPLocation, 1, GL_TRUE, (const GLfloat*)p.GetWVPTrans());
 
         glEnableVertexAttribArray(0);
+        glEnableVertexAttribArray(1);
         glBindBuffer(GL_ARRAY_BUFFER, VBO);
-        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), 0);
+        glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (const GLvoid*)12);
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, IBO);
-
+        pTexture->Bind(GL_TEXTURE0);
         glDrawElements(GL_TRIANGLES, 12, GL_UNSIGNED_INT, 0);
 
         glDisableVertexAttribArray(0);
+        glDisableVertexAttribArray(1);
 
         OgldevBackendSwapBuffers();
     }
@@ -105,16 +126,16 @@ class CallBacks: public ICallbacks{
 
 static void CreateVertexBuffer()
 {
-    Vector3f Vertices[4];
-    Vertices[0] = Vector3f(-1.0f, -1.0f, 0.5773f);
-    Vertices[1] = Vector3f(0.0f, -1.0f, -1.15475f);
-    Vertices[2] = Vector3f(1.0f, -1.0f, 0.5773f);
-    Vertices[3] = Vector3f(0.0f, 1.0f, 0.0f);
+    Vertex Vertices[4] = { Vertex(Vector3f(-1.0f, -1.0f, 0.5773f), Vector2f(0.0f, 0.0f)),
+                           Vertex(Vector3f(0.0f, -1.0f, -1.15475f), Vector2f(0.5f, 0.0f)),
+                           Vertex(Vector3f(1.0f, -1.0f, 0.5773f),  Vector2f(1.0f, 0.0f)),
+                           Vertex(Vector3f(0.0f, 1.0f, 0.0f),      Vector2f(0.5f, 1.0f)) };
 
         glGenBuffers(1, &VBO);
         glBindBuffer(GL_ARRAY_BUFFER, VBO);
         glBufferData(GL_ARRAY_BUFFER, sizeof(Vertices), Vertices, GL_STATIC_DRAW);
 }
+
 
 static void CreateIndexBuffer()
 {
@@ -128,6 +149,7 @@ static void CreateIndexBuffer()
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(Indices), Indices, GL_STATIC_DRAW);
 }
 
+
 static void AddShader(GLuint ShaderProgram, const char* pShaderText, GLenum ShaderType)
 {
     GLuint ShaderObj = glCreateShader(ShaderType);
@@ -140,7 +162,7 @@ static void AddShader(GLuint ShaderProgram, const char* pShaderText, GLenum Shad
     const GLchar* p[1];
     p[0] = pShaderText;
     GLint Lengths[1];
-    Lengths[0]= static_cast<GLint>(strlen(pShaderText));
+    Lengths[0]= strlen(pShaderText);
     glShaderSource(ShaderObj, 1, p, Lengths);
     glCompileShader(ShaderObj);
     GLint success;
@@ -154,6 +176,7 @@ static void AddShader(GLuint ShaderProgram, const char* pShaderText, GLenum Shad
 
     glAttachShader(ShaderProgram, ShaderObj);
 }
+
 
 static void CompileShaders()
 {
@@ -200,12 +223,15 @@ static void CompileShaders()
 
     gWVPLocation = glGetUniformLocation(ShaderProgram, "gWVP");
     assert(gWVPLocation != 0xFFFFFFFF);
+    gSampler = glGetUniformLocation(ShaderProgram, "gSampler");
+    assert(gSampler != 0xFFFFFFFF);
 }
+
 
 int main(int argc, char** argv)
 {
     OgldevBackendInit(argc,argv,false,false);
-    OgldevBackendCreateWindow(WINDOW_WIDTH,WINDOW_HEIGHT,false,"Tutorial 14");
+    OgldevBackendCreateWindow(WINDOW_WIDTH,WINDOW_HEIGHT,false,"Tutorial 16");
 
     CreateVertexBuffer();
     CreateIndexBuffer();
@@ -218,6 +244,13 @@ int main(int argc, char** argv)
     gPersProjInfo.zFar = 100.0f;
 
     pGameCamera = new Camera(WINDOW_WIDTH, WINDOW_HEIGHT);
+    glUniform1i(gSampler, 0);
+
+    pTexture = new Texture(GL_TEXTURE_2D, "images/test.png");
+
+    if (!pTexture->Load()) {
+        return 1;
+    }
     OgldevBackendRun(new CallBacks);
 
     return 0;

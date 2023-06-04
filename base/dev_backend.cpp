@@ -23,14 +23,15 @@
 #include "glut_backend.h"
 #include "glfw_backend.h"
 
+#ifdef USE_GLUT_BACKEND
+    static OGLDEV_BACKEND_TYPE sBackendType = OGLDEV_BACKEND_TYPE_GLUT;
+#elif defined(USE_GLFW_BACKEND)
+    static OGLDEV_BACKEND_TYPE sBackendType = OGLDEV_BACKEND_TYPE_GLFW;
+#endif
 
-static OGLDEV_BACKEND_TYPE sBackendType = OGLDEV_BACKEND_TYPE_GLUT;
-
-void OgldevBackendInit(OGLDEV_BACKEND_TYPE BackendType, int argc, char** argv, bool WithDepth, bool WithStencil)
+void OgldevBackendInit(int argc, char** argv, bool WithDepth, bool WithStencil)
 {
-    sBackendType = BackendType;
-
-    switch (BackendType) {
+    switch (sBackendType) {
         case OGLDEV_BACKEND_TYPE_GLUT:
             GLUTBackendInit(argc, argv, WithDepth, WithStencil);
             break;

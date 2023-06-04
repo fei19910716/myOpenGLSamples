@@ -20,45 +20,57 @@
 
 #include <stdio.h>
 #include <string>
-#include <glew/glew.h>
-#include <glut/freeglut.h>
 
+#include "base/dev_gl.h"
+#include "base/dev_backend.h"
 #include "base/math_3d.h"
 #include "base/utils.h"
 
+#define WINDOW_WIDTH 800
+#define WINDOW_HEIGHT 600
 
-GLuint VBO;
+class CallBacks: public ICallbacks{
+    public:
+    void RenderSceneCB() override
+    {
+        // render
+        // ------
+        glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+        glClear(GL_COLOR_BUFFER_BIT);
 
+        glDrawArrays(GL_TRIANGLES, 0, 3);
 
-static void RenderSceneCB()
-{
-    glClearColor(0.2f, 0.1f, 0.3f, 1.0f);
-    glClear(GL_COLOR_BUFFER_BIT);
+        OgldevBackendSwapBuffers();
+    }
 
-    glBindBuffer(GL_ARRAY_BUFFER, VBO);
-
-    glEnableVertexAttribArray(0);
-
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
-
-    glDrawArrays(GL_TRIANGLES, 0, 3);
-
-    glDisableVertexAttribArray(0);
-
-    glutSwapBuffers();
-}
-
+    void FramebufferSizeCB(int width, int height) override
+    {
+        // make sure the viewport matches the new window dimensions; note that width and 
+        // height will be significantly larger than specified on retina displays.
+        glViewport(0, 0, width, height);
+    }
+};
 
 static void CreateVertexBuffer()
 {
     Vector3f Vertices[3];
-    Vertices[0] = Vector3f(-1.0f, -1.0f, 0.0f);   // bottom left
-    Vertices[1] = Vector3f(1.0f, -1.0f, 0.0f);    // bottom right
-    Vertices[2] = Vector3f(0.0f, 1.0f, 0.0f);     // top
+    Vertices[0] = Vector3f(-0.5f, -0.5f, 0.0f);   // bottom left
+    Vertices[1] = Vector3f(0.5f, -0.5f, 0.0f);    // bottom right
+    Vertices[2] = Vector3f(0.0f,  0.5f, 0.0f);     // top
 
+    unsigned int VAO, VBO;
+    glGenVertexArrays(1, &VAO);
     glGenBuffers(1, &VBO);
+
+    glBindVertexArray(VAO);
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
     glBufferData(GL_ARRAY_BUFFER, sizeof(Vertices), Vertices, GL_STATIC_DRAW);
+
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+    glEnableVertexAttribArray(0);
+
+    // glBindBuffer(GL_ARRAY_BUFFER, 0); 
+    // glBindVertexArray(0); 
 }
 
 static void AddShader(GLuint ShaderProgram, const char* pShaderText, GLenum ShaderType)
@@ -144,32 +156,16 @@ static void CompileShaders()
 
 int main(int argc, char** argv)
 {
-    glutInit(&argc, argv);
-    glutInitDisplayMode(GLUT_DOUBLE|GLUT_RGBA|GLUT_DEPTH);
-    int width = 800;
-    int height = 600;
-    glutInitWindowSize(width, height);
-
-    int x = 200;
-    int y = 100;
-    glutInitWindowPosition(x, y);
-    int win = glutCreateWindow("Tutorial 04");
-    printf("window id: %d\n", win);
-
-    // Must be done after glut is initialized!
-    GLenum res = glewInit();
-    if (res != GLEW_OK) {
-        fprintf(stderr, "Error: '%s'\n", glewGetErrorString(res));
-        return 1;
-    }
+    OgldevBackendInit(argc,argv,false,false);
+    OgldevBackendCreateWindow(WINDOW_WIDTH,WINDOW_HEIGHT,false,"Tutorial 04");
 
     CreateVertexBuffer();
 
     CompileShaders();
 
-    glutDisplayFunc(RenderSceneCB);
+    OgldevBackendRun(new CallBacks);
 
-    glutMainLoop();
+    OgldevBackendTerminate();
 
     return 0;
 }
