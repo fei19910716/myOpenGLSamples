@@ -25,12 +25,15 @@
 #include "base/dev_backend.h"
 #include "base/texture.h"
 #include "base/app.h"
+#include "mesh.h"
+#include "quad_mesh.h"
 
 #include "base/lighting/lights_common.h"
 #include "base/lighting/basic_lighting_technique.h"
 
-#include "base/mesh.h"
+
 #include "shadow_map_technique.h"
+#include "draw_texture_technique.h"
 #include "shadow_map_fbo.h"
 
 #define WINDOW_WIDTH  1920
@@ -73,30 +76,45 @@ public:
 
     bool Init()
     {
+        /**
+         * Create the shadow map FBO, which is used as the render target in the shadow map pass.
+         * The FBO only has depth attachment. And will be used as texture in the later renderpass.
+        */
         if (!m_shadowMapFBO.Init(WINDOW_WIDTH, WINDOW_HEIGHT)) {
             return false;
         }
 
-        m_pGameCamera = new Camera(WINDOW_WIDTH, WINDOW_HEIGHT/*, Pos, Target, Up*/);
+        m_pGameCamera = new Camera(WINDOW_WIDTH, WINDOW_HEIGHT);
 
         m_pShadowMapTech = new ShadowMapTechnique();
-
         if (!m_pShadowMapTech->Init()) {
             printf("Error initializing the shadow map technique\n");
             return false;
         }
 
-        m_pShadowMapTech->Enable();
+        m_pDrawTextureTech = new DrawTextureTechnique();
+        if (!m_pDrawTextureTech->Init()) {
+            printf("Error initializing the draw texture technique\n");
+            return false;
+        }
 
-        m_pQuad = new Mesh();
-
-        if (!m_pQuad->LoadMesh("models/quad.obj")) {
+        m_pQuad = new QuadMesh();
+        if (!m_pQuad->Init()) {
             return false;
         }
 
         m_pMesh = new Mesh();
+        if (!m_pMesh->LoadMesh("models/phoenix_ugv.md2")) {
+            return false;
+        }
 
-        return m_pMesh->LoadMesh("models/phoenix_ugv.md2");
+        // For debug
+        m_pDebugTexture = new Texture(GL_TEXTURE_2D, "images/test.png");
+        if (!m_pDebugTexture->Load()) {
+            return false;
+        }
+
+        return true;
     }
 
     void Run()
@@ -122,11 +140,12 @@ public:
         glClear(GL_DEPTH_BUFFER_BIT);
 
         Pipeline p;
-        p.Scale(0.1f, 0.1f, 0.1f);
+        p.Scale(0.2f, 0.2f, 0.2f);
         p.Rotate(0.0f, m_scale, 0.0f);
         p.WorldPos(0.0f, 0.0f, 5.0f);
         p.SetCamera(m_spotLight.Position, m_spotLight.Direction, Vector3f(0.0f, 1.0f, 0.0f));
         p.SetPerspectiveProj(m_persProjInfo);
+        m_pShadowMapTech->Enable();
         m_pShadowMapTech->SetWVP(p.GetWVPTrans());
         m_pMesh->Render();
 
@@ -137,15 +156,13 @@ public:
     {
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        m_pShadowMapTech->SetTextureUnit(0);
+        glPolygonMode(GL_FRONT, GL_FILL); 
+        
         m_shadowMapFBO.BindForReading(GL_TEXTURE0);
+        // m_pDebug->Bind(GL_TEXTURE0);
 
-        Pipeline p;
-        p.Scale(5.0f, 5.0f, 5.0f);
-        p.WorldPos(0.0f, 0.0f, 10.0f);
-        p.SetCamera(m_pGameCamera->GetPos(), m_pGameCamera->GetTarget(), m_pGameCamera->GetUp());
-        p.SetPerspectiveProj(m_persProjInfo);
-        m_pShadowMapTech->SetWVP(p.GetWVPTrans());
+        m_pDrawTextureTech->Enable();
+        m_pDrawTextureTech->SetTextureUnit(GL_TEXTURE0);
         m_pQuad->Render();
     }
 
@@ -170,14 +187,17 @@ public:
 
  private:
 
-    ShadowMapTechnique* m_pShadowMapTech;
-    Camera* m_pGameCamera;
-    float m_scale;
+    ShadowMapTechnique*   m_pShadowMapTech;
+    DrawTextureTechnique* m_pDrawTextureTech;
+    Camera*   m_pGameCamera;
+    float     m_scale;
     SpotLight m_spotLight;
-    Mesh* m_pMesh;
-    Mesh* m_pQuad;
-    ShadowMapFBO m_shadowMapFBO;
-    PersProjInfo m_persProjInfo;
+    Mesh*     m_pMesh;
+    QuadMesh* m_pQuad;
+    ShadowMapFBO  m_shadowMapFBO;
+    PersProjInfo  m_persProjInfo;
+
+    Texture*      m_pDebugTexture;
 };
 
 

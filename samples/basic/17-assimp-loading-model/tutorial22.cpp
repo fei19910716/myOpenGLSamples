@@ -20,7 +20,7 @@
 
 #include <math.h>
 
-#include "base/mesh.h"
+#include "mesh.h"
 #include "base/pipeline.h"
 #include "base/math_3d.h"
 #include "base/dev_backend.h"

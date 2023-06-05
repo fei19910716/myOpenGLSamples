@@ -19,7 +19,23 @@ add_custom_command(TARGET ${target} POST_BUILD
 
 add_custom_command(TARGET ${target} POST_BUILD
     COMMAND
+        ${CMAKE_COMMAND} -E copy_if_different ${CMAKE_CURRENT_SOURCE_DIR}/draw_texture.vs ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}${CMAKE_BUILD_TYPE}/shaders/shadows/draw_texture.vs
+    COMMAND
+        ${CMAKE_COMMAND} -E copy_if_different ${CMAKE_CURRENT_SOURCE_DIR}/draw_texture.fs ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}${CMAKE_BUILD_TYPE}/shaders/shadows/draw_texture.fs
+    COMMENT
+        "Custom command copy shader"
+)
+
+add_custom_command(TARGET ${target} POST_BUILD
+    COMMAND
         ${CMAKE_COMMAND} -E copy_if_different ${CMAKE_SOURCE_DIR}/data/images/white.png ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}${CMAKE_BUILD_TYPE}/images/white.png
+    COMMENT
+        "Custom command copy shader"
+)
+
+add_custom_command(TARGET ${target} POST_BUILD
+    COMMAND
+        ${CMAKE_COMMAND} -E copy_if_different ${CMAKE_SOURCE_DIR}/data/images/test.png ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}${CMAKE_BUILD_TYPE}/images/test.png
     COMMENT
         "Custom command copy shader"
 )

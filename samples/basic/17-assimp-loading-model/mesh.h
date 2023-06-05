@@ -26,9 +26,9 @@
 #include <assimp/scene.h>       // Output data structure
 #include <assimp/postprocess.h> // Post processing flags
 
-#include "utils.h"
-#include "math_3d.h"
-#include "texture.h"
+#include "base/utils.h"
+#include "base/math_3d.h"
+#include "base/texture.h"
 
 #define INVALID_MATERIAL 0xFFFFFFFF
 
