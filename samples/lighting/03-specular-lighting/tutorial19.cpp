@@ -19,15 +19,13 @@
 */
 
 #include <math.h>
-#include <GL/glew.h>
-#include <GL/freeglut.h>
 
-#include "ogldev_pipeline.h"
-#include "ogldev_math_3d.h"
-#include "ogldev_glut_backend.h"
-#include "ogldev_texture.h"
-#include "ogldev_lights_common.h"
-#include "ogldev_app.h"
+#include "base/pipeline.h"
+#include "base/math_3d.h"
+#include "base/dev_backend.h"
+#include "base/texture.h"
+#include "base/lighting/lights_common.h"
+#include "base/lighting/app.h"
 #include "lighting_technique.h"
 
 
@@ -107,7 +105,7 @@ public:
 
         m_pEffect->SetTextureUnit(0);
 
-        m_pTexture = new Texture(GL_TEXTURE_2D, "../Content/test.png");
+        m_pTexture = new Texture(GL_TEXTURE_2D, "images/test.png");
 
         if (!m_pTexture->Load()) {
             return false;
@@ -118,7 +116,7 @@ public:
 
     void Run()
     {
-        GLUTBackendRun(this);
+        OgldevBackendRun(this);
     }
 
     virtual void RenderSceneCB()
@@ -157,7 +155,7 @@ public:
         glDisableVertexAttribArray(1);
         glDisableVertexAttribArray(2);
 
-        glutSwapBuffers();
+        OgldevBackendSwapBuffers();
     }
 
 
@@ -166,7 +164,7 @@ public:
         switch (OgldevKey) {
             case OGLDEV_KEY_ESCAPE:
             case OGLDEV_KEY_q:
-                    GLUTBackendLeaveMainLoop();
+                    OgldevBackendLeaveMainLoop();
                     break;
 
             case OGLDEV_KEY_a:
@@ -200,14 +198,17 @@ private:
     {
         // Accumulate each triangle normal into each of the triangle vertices
         for (unsigned int i = 0 ; i < IndexCount ; i += 3) {
+            // get the 3 vertices of the triangle
             unsigned int Index0 = pIndices[i];
             unsigned int Index1 = pIndices[i + 1];
             unsigned int Index2 = pIndices[i + 2];
+            // use the 3 vertices to caculate the plane normal
             Vector3f v1 = pVertices[Index1].m_pos - pVertices[Index0].m_pos;
             Vector3f v2 = pVertices[Index2].m_pos - pVertices[Index0].m_pos;
             Vector3f Normal = v1.Cross(v2);
             Normal.Normalize();
 
+            // use the plus operation to accumulate all the plane normals that the vertex shares.
             pVertices[Index0].m_normal += Normal;
             pVertices[Index1].m_normal += Normal;
             pVertices[Index2].m_normal += Normal;
@@ -256,9 +257,9 @@ private:
 int main(int argc, char** argv)
 {
 //    Magick::InitializeMagick(*argv);
-    GLUTBackendInit(argc, argv, false, false);
+    OgldevBackendInit(argc, argv, false, false);
 
-    if (!GLUTBackendCreateWindow(WINDOW_WIDTH, WINDOW_HEIGHT, false, "Tutorial 19")) {
+    if (!OgldevBackendCreateWindow(WINDOW_WIDTH, WINDOW_HEIGHT, false, "Tutorial 19")) {
         return 1;
     }
 

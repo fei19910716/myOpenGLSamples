@@ -19,9 +19,9 @@
 #ifndef LIGHTING_TECHNIQUE_19_H
 #define LIGHTING_TECHNIQUE_19_H
 
-#include "technique.h"
-#include "ogldev_math_3d.h"
-#include "ogldev_lights_common.h"
+#include "base/lighting/technique.h"
+#include "base/math_3d.h"
+#include "base/lighting/lights_common.h"
 
 class LightingTechnique : public Technique {
 public:

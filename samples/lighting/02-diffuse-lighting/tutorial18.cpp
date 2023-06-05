@@ -102,10 +102,6 @@ public:
             return false;
         }
 
-        m_pEffect->Enable();
-
-        m_pEffect->SetTextureUnit(0);
-
         m_pTexture = new Texture(GL_TEXTURE_2D, "images/test.png");
 
         if (!m_pTexture->Load()) {
@@ -133,25 +129,17 @@ public:
         p.WorldPos(0.0f, 0.0f, 1.0f);
         p.SetCamera(m_pGameCamera->GetPos(), m_pGameCamera->GetTarget(), m_pGameCamera->GetUp());
         p.SetPerspectiveProj(m_persProjInfo);
+
+        m_pEffect->Enable();
+        m_pEffect->SetTextureUnit(0);
         m_pEffect->SetWVP(p.GetWVPTrans());
-        const Matrix4f& WorldTransformation = p.GetWorldTrans();
-        m_pEffect->SetWorldMatrix(WorldTransformation);
+        m_pEffect->SetWorldMatrix(p.GetWorldTrans());
         m_pEffect->SetDirectionalLight(m_directionalLight);
 
-        glEnableVertexAttribArray(0);
-        glEnableVertexAttribArray(1);
-        glEnableVertexAttribArray(2);
         glBindBuffer(GL_ARRAY_BUFFER, m_VBO);
-        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), 0);
-        glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (const GLvoid*)12);
-        glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (const GLvoid*)20);
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_IBO);
         m_pTexture->Bind(GL_TEXTURE0);
         glDrawElements(GL_TRIANGLES, 12, GL_UNSIGNED_INT, 0);
-
-        glDisableVertexAttribArray(0);
-        glDisableVertexAttribArray(1);
-        glDisableVertexAttribArray(2);
 
         OgldevBackendSwapBuffers();
     }
@@ -229,6 +217,17 @@ private:
         glGenBuffers(1, &m_VBO);
         glBindBuffer(GL_ARRAY_BUFFER, m_VBO);
         glBufferData(GL_ARRAY_BUFFER, sizeof(Vertices), Vertices, GL_STATIC_DRAW);
+
+        /// if we want to set AttribPointer here and remove the code from the mainloop, we need to use VAO.
+        glEnableVertexAttribArray(0);
+        glEnableVertexAttribArray(1);
+        glEnableVertexAttribArray(2);
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), 0);
+        glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (const GLvoid*)12);
+        glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (const GLvoid*)20);
+        // glDisableVertexAttribArray(0);
+        // glDisableVertexAttribArray(1);
+        // glDisableVertexAttribArray(2);
     }
 
     void CreateIndexBuffer(const unsigned int* pIndices, unsigned int SizeInBytes)
@@ -236,6 +235,7 @@ private:
         glGenBuffers(1, &m_IBO);
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_IBO);
         glBufferData(GL_ELEMENT_ARRAY_BUFFER, SizeInBytes, pIndices, GL_STATIC_DRAW);
+
     }
 
     GLuint m_VBO;

@@ -13,5 +13,7 @@ if(BUILD_ALL_SAMPLES)
 else()
     add_subdirectory(01-ambient-lighting)
     add_subdirectory(02-diffuse-lighting)
+    add_subdirectory(03-specular-lighting)
+    add_subdirectory(04-point-light)
 endif()
 
