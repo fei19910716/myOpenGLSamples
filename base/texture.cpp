@@ -17,6 +17,7 @@
 */
 
 #include <iostream>
+
 #include "utils.h"
 #include "texture.h"
 #define STB_IMAGE_IMPLEMENTATION

@@ -11,6 +11,7 @@ if(BUILD_ALL_SAMPLES)
     endforeach()
 else()
     # add_subdirectory(basic)
-    add_subdirectory(lighting)
+    # add_subdirectory(lighting)
+    add_subdirectory(shadows)
 endif()
 

@@ -15,6 +15,6 @@ else()
     # add_subdirectory(04-hello-triangle)
     # add_subdirectory(14-camera-key-control)
     # add_subdirectory(15-camera-mouse-control)
-    add_subdirectory(16-texture)
+    add_subdirectory(17-assimp-loading-model)
 endif()
 

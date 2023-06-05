@@ -11,11 +11,7 @@ if(BUILD_ALL_SAMPLES)
     endforeach()
 
 else()
-    add_subdirectory(01-hello-window-glfw)
-    add_subdirectory(02-hello-dot-fix-pipeline)
-    add_subdirectory(04-hello-triangle)
-    add_subdirectory(14-camera-key-control)
-    add_subdirectory(15-camera-mouse-control)
-    add_subdirectory(16-texture)
+    add_subdirectory(01-shadow-mapping-draw-depth)
+    add_subdirectory(02-shadow-mapping-draw-scene)
 endif()
 

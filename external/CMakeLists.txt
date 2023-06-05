@@ -10,6 +10,7 @@ set(external_libs
     glfw
 
     stb
+    assimp
 )
 
 foreach(external_lib ${external_libs})
