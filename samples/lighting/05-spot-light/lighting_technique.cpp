@@ -19,8 +19,8 @@
 #include <limits.h>
 #include <string.h>
 
-#include "ogldev_math_3d.h"
-#include "ogldev_util.h"
+#include "base/math_3d.h"
+#include "base/utils.h"
 #include "lighting_technique.h"
 
 
@@ -37,11 +37,11 @@ bool LightingTechnique::Init()
         return false;
     }
 
-    if (!AddShader(GL_VERTEX_SHADER, "lighting.vs")) {
+    if (!AddShader(GL_VERTEX_SHADER, "shaders/lighting/05-spot-light.vs")) {
         return false;
     }
 
-    if (!AddShader(GL_FRAGMENT_SHADER, "lighting.fs")) {
+    if (!AddShader(GL_FRAGMENT_SHADER, "shaders/lighting/05-spot-light.fs")) {
         return false;
     }
 

@@ -19,16 +19,13 @@
 */
 
 #include <math.h>
-#include <GL/glew.h>
-#include <GL/freeglut.h>
 
-
-#include "ogldev_pipeline.h"
-#include "ogldev_math_3d.h"
-#include "ogldev_glut_backend.h"
-#include "ogldev_texture.h"
-#include "ogldev_lights_common.h"
-#include "ogldev_app.h"
+#include "base/pipeline.h"
+#include "base/math_3d.h"
+#include "base/dev_backend.h"
+#include "base/texture.h"
+#include "base/lighting/lights_common.h"
+#include "base/lighting/app.h"
 #include "lighting_technique.h"
 
 #define WINDOW_WIDTH  1920
@@ -112,7 +109,7 @@ public:
 
         m_pEffect->SetTextureUnit(0);
 
-        m_pTexture = new Texture(GL_TEXTURE_2D, "../Content/test.png");
+        m_pTexture = new Texture(GL_TEXTURE_2D, "images/test.png");
 
         if (!m_pTexture->Load()) {
             return false;
@@ -123,7 +120,7 @@ public:
 
     void Run()
     {
-        GLUTBackendRun(this);
+        OgldevBackendRun(this);
     }
 
     virtual void RenderSceneCB()
@@ -187,7 +184,7 @@ public:
         glDisableVertexAttribArray(1);
         glDisableVertexAttribArray(2);
 
-        glutSwapBuffers();
+        OgldevBackendSwapBuffers();
     }
 
 
@@ -197,7 +194,7 @@ public:
         switch (OgldevKey) {
         case OGLDEV_KEY_ESCAPE:
         case OGLDEV_KEY_q:
-            GLUTBackendLeaveMainLoop();
+            OgldevBackendLeaveMainLoop();
             break;
         case OGLDEV_KEY_a:
             m_directionalLight.AmbientIntensity += 0.05f;
@@ -255,9 +252,9 @@ private:
 
 int main(int argc, char** argv)
 {
-    GLUTBackendInit(argc, argv, false, false);
+    OgldevBackendInit(argc, argv, false, false);
 
-    if (!GLUTBackendCreateWindow(WINDOW_WIDTH, WINDOW_HEIGHT, false, "Tutorial 21")) {
+    if (!OgldevBackendCreateWindow(WINDOW_WIDTH, WINDOW_HEIGHT, false, "Tutorial 21")) {
         return 1;
     }
 

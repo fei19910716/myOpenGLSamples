@@ -15,5 +15,6 @@ else()
     add_subdirectory(02-diffuse-lighting)
     add_subdirectory(03-specular-lighting)
     add_subdirectory(04-point-light)
+    add_subdirectory(05-spot-light)
 endif()
 
