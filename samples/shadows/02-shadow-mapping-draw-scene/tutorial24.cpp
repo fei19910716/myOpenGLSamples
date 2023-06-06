@@ -27,7 +27,8 @@
 #include "base/lighting/lights_common.h"
 #include "base/app.h"
 #include "lighting_technique.h"
-#include "base/mesh.h"
+#include "mesh.h"
+#include "ground_mesh.h"
 #include "shadow_map_technique.h"
 
 
@@ -45,12 +46,12 @@ public:
         m_pShadowMapEffect = NULL;
         m_pGameCamera = NULL;
         m_pMesh = NULL;
-        m_pQuad = NULL;
+        m_pGround = NULL;
         m_scale = 0.0f;
         m_pGroundTex = NULL;
 
-        m_spotLight.AmbientIntensity = 0.1f;
-        m_spotLight.DiffuseIntensity = 0.9f;
+        m_spotLight.AmbientIntensity = 0.2f;
+        m_spotLight.DiffuseIntensity = 0.8f;
         m_spotLight.Color = Vector3f(1.0f, 1.0f, 1.0f);
         m_spotLight.Attenuation.Linear = 0.01f;
         m_spotLight.Position  = Vector3f(-20.0, 20.0, 1.0f);
@@ -71,7 +72,7 @@ public:
         SAFE_DELETE(m_pShadowMapEffect);
         SAFE_DELETE(m_pGameCamera);
         SAFE_DELETE(m_pMesh);
-        SAFE_DELETE(m_pQuad);
+        SAFE_DELETE(m_pGround);
         SAFE_DELETE(m_pGroundTex);
     }
 
@@ -107,9 +108,15 @@ public:
             return false;
         }
 
-        m_pQuad = new Mesh();
+        m_pGround = new GroundMesh();
 
-        if (!m_pQuad->LoadMesh("models/quad.obj")) {
+        if (!m_pGround->Init()) {
+            return false;
+        }
+
+        m_pMesh = new Mesh();
+
+        if(!m_pMesh->LoadMesh("models/phoenix_ugv.md2")){
             return false;
         }
 
@@ -119,10 +126,8 @@ public:
             return false;
         }
 
-        m_pMesh = new Mesh();
-
-                return m_pMesh->LoadMesh("models/phoenix_ugv.md2");
-        }
+        return true;
+    }
 
 
     void Run()
@@ -177,20 +182,20 @@ public:
         Pipeline p;
         p.SetPerspectiveProj(m_persProjInfo);
 
-        p.Scale(10.0f, 10.0f, 10.0f);
-        p.WorldPos(0.0f, 0.0f, 1.0f);
-        p.Rotate(90.0f, 0.0f, 0.0f);
+        p.Scale(4.0f, 4.0f, 4.0f);
+        p.WorldPos(0.0f, 0.5f, 1.0f);
+        p.Rotate(0.0f, 0.0f, 0.0f);
         p.SetCamera(m_pGameCamera->GetPos(), m_pGameCamera->GetTarget(), m_pGameCamera->GetUp());
         m_pLightingEffect->SetWVP(p.GetWVPTrans());
         m_pLightingEffect->SetWorldMatrix(p.GetWorldTrans());
         p.SetCamera(m_spotLight.Position, m_spotLight.Direction, Vector3f(0.0f, 1.0f, 0.0f));
         m_pLightingEffect->SetLightWVP(p.GetWVPTrans());
         m_pGroundTex->Bind(GL_TEXTURE0);
-        m_pQuad->Render();
+        m_pGround->Render();
 
-        p.Scale(0.1f, 0.1f, 0.1f);
-        p.Rotate(0.0f, m_scale, 0.0f);
-        p.WorldPos(0.0f, 0.0f, 3.0f);
+        p.Scale(0.05f, 0.05f, 0.05f);
+        p.Rotate(90.0f, m_scale, 0.0f);
+        p.WorldPos(0.0f, 0.0f, 6.0f);
         p.SetCamera(m_pGameCamera->GetPos(), m_pGameCamera->GetTarget(), m_pGameCamera->GetUp());
         m_pLightingEffect->SetWVP(p.GetWVPTrans());
         m_pLightingEffect->SetWorldMatrix(p.GetWorldTrans());
@@ -226,7 +231,7 @@ public:
     float m_scale;
     SpotLight m_spotLight;
     Mesh* m_pMesh;
-    Mesh* m_pQuad;
+    GroundMesh* m_pGround;
     Texture* m_pGroundTex;
     ShadowMapFBO m_shadowMapFBO;
     PersProjInfo m_persProjInfo;

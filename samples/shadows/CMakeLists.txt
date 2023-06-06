@@ -12,6 +12,6 @@ if(BUILD_ALL_SAMPLES)
 
 else()
     add_subdirectory(01-shadow-mapping-draw-depth)
-    # add_subdirectory(02-shadow-mapping-draw-scene)
+    add_subdirectory(02-shadow-mapping-draw-scene)
 endif()
 

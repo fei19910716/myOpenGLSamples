@@ -25,13 +25,13 @@
 #include "base/dev_backend.h"
 #include "base/texture.h"
 #include "base/app.h"
-#include "mesh.h"
-#include "quad_mesh.h"
 
 #include "base/lighting/lights_common.h"
 #include "base/lighting/basic_lighting_technique.h"
 
 
+#include "mesh.h"
+#include "quad_mesh.h"
 #include "shadow_map_technique.h"
 #include "draw_texture_technique.h"
 #include "shadow_map_fbo.h"
@@ -141,7 +141,7 @@ public:
 
         Pipeline p;
         p.Scale(0.2f, 0.2f, 0.2f);
-        p.Rotate(0.0f, m_scale, 0.0f);
+        p.Rotate(90.0f, 0.0, 0.0f);
         p.WorldPos(0.0f, 0.0f, 5.0f);
         p.SetCamera(m_spotLight.Position, m_spotLight.Direction, Vector3f(0.0f, 1.0f, 0.0f));
         p.SetPerspectiveProj(m_persProjInfo);
