@@ -50,13 +50,13 @@ public:
         m_scale = 0.0f;
         m_pGroundTex = NULL;
 
-        m_spotLight.AmbientIntensity = 0.2f;
-        m_spotLight.DiffuseIntensity = 0.8f;
+        m_spotLight.AmbientIntensity = 0.8f;
+        m_spotLight.DiffuseIntensity = 5.8f;
         m_spotLight.Color = Vector3f(1.0f, 1.0f, 1.0f);
-        m_spotLight.Attenuation.Linear = 0.01f;
+        m_spotLight.Attenuation.Linear = 0.1f;
         m_spotLight.Position  = Vector3f(-20.0, 20.0, 1.0f);
         m_spotLight.Direction = Vector3f(1.0f, -1.0f, 0.0f);
-        m_spotLight.Cutoff =  20.0f;
+        m_spotLight.Cutoff =  10.0f;
 
         m_persProjInfo.FOV = 60.0f;
         m_persProjInfo.Height = WINDOW_HEIGHT;
@@ -157,9 +157,16 @@ public:
         m_pShadowMapEffect->Enable();
 
         Pipeline p;
-        p.Scale(0.1f, 0.1f, 0.1f);
-        p.Rotate(0.0f, m_scale, 0.0f);
-        p.WorldPos(0.0f, 0.0f, 3.0f);
+        p.Scale(4.0f, 4.0f, 4.0f);
+        p.WorldPos(0.0f, 0.5f, 1.0f);
+        p.Rotate(0.0f, 0.0f, 0.0f);
+        p.SetCamera(m_spotLight.Position, m_spotLight.Direction, Vector3f(0.0f, 1.0f, 0.0f));
+        m_pLightingEffect->SetLightWVP(p.GetWVPTrans());
+        m_pGround->Render();
+
+        p.Scale(0.05f, 0.05f, 0.05f);
+        p.Rotate(90.0f, m_scale, 0.0f);
+        p.WorldPos(0.0f, 0.0f, 6.0f);
         p.SetCamera(m_spotLight.Position, m_spotLight.Direction, Vector3f(0.0f, 1.0f, 0.0f));
         p.SetPerspectiveProj(m_persProjInfo);
         m_pShadowMapEffect->SetWVP(p.GetWVPTrans());
