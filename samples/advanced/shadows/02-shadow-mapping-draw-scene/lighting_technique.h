@@ -20,8 +20,8 @@
 
 #include "base/technique.h"
 #include "base/math_3d.h"
-#include "base/lighting/lights_common.h"
-#include "base/shadows/shadow_map_fbo.h"
+#include "base/lights_common.h"
+#include "base/shadow_map_fbo.h"
 #include "shadow_map_technique.h"
 
 

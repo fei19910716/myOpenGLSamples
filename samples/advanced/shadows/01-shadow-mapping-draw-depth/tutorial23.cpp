@@ -26,8 +26,8 @@
 #include "base/texture.h"
 #include "base/app.h"
 
-#include "base/lighting/lights_common.h"
-#include "base/lighting/basic_lighting_technique.h"
+#include "base/lights_common.h"
+#include "base/basic_lighting_technique.h"
 
 
 #include "mesh.h"

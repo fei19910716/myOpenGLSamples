@@ -24,7 +24,7 @@
 #include "base/math_3d.h"
 #include "base/dev_backend.h"
 #include "base/texture.h"
-#include "base/lighting/lights_common.h"
+#include "base/lights_common.h"
 #include "base/app.h"
 #include "lighting_technique.h"
 #include "mesh.h"
