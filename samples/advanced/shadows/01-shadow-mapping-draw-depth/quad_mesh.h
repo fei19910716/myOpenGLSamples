@@ -17,5 +17,5 @@ public:
 private:
     void Clear();
 
-    GLuint m_VB;
+    unsigned int VBO, VAO, EBO;
 };

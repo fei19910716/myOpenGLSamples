@@ -4,11 +4,11 @@
 #include "base/technique.h"
 #include "base/math_3d.h"
 
-class DrawTextureTechnique : public Technique {
+class DisplayScreenTechnique : public Technique {
 
 public:
 
-    DrawTextureTechnique();
+    DisplayScreenTechnique();
 
     virtual bool Init();
 

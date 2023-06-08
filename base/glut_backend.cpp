@@ -231,10 +231,6 @@ void GLUTBackendRun(ICallbacks* pCallbacks)
         return;
     }
 
-    glFrontFace(GL_CW);
-    glCullFace(GL_BACK);
-    glEnable(GL_CULL_FACE);
-
     if (sWithDepth) {
         glEnable(GL_DEPTH_TEST);
     }

@@ -1,23 +1,23 @@
 
-#include "draw_texture_technique.h"
+#include "display_screen_technique.h"
 
 #include "base/utils.h"
 
-DrawTextureTechnique::DrawTextureTechnique()
+DisplayScreenTechnique::DisplayScreenTechnique()
 {
 }
 
-bool DrawTextureTechnique::Init()
+bool DisplayScreenTechnique::Init()
 {
     if (!Technique::Init()) {
         return false;
     }
 
-    if (!AddShader(GL_VERTEX_SHADER, "shaders/shadows/draw_texture.vs")) {
+    if (!AddShader(GL_VERTEX_SHADER, "shaders/display_screen.vs")) {
         return false;
     }
 
-    if (!AddShader(GL_FRAGMENT_SHADER, "shaders/shadows/draw_texture.fs")) {
+    if (!AddShader(GL_FRAGMENT_SHADER, "shaders/display_screen.fs")) {
         return false;
     }
 
@@ -34,7 +34,7 @@ bool DrawTextureTechnique::Init()
     return true;
 }
 
-void DrawTextureTechnique::SetTextureUnit(unsigned int TextureUnit)
+void DisplayScreenTechnique::SetTextureUnit(unsigned int TextureUnit)
 {
     glUniform1i(m_textureLocation, TextureUnit);
 }

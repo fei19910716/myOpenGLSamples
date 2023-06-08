@@ -33,7 +33,7 @@
 #include "mesh.h"
 #include "quad_mesh.h"
 #include "shadow_map_technique.h"
-#include "draw_texture_technique.h"
+#include "display_screen_technique.h"
 #include "shadow_map_fbo.h"
 
 #define WINDOW_WIDTH  1920
@@ -92,7 +92,7 @@ public:
             return false;
         }
 
-        m_pDrawTextureTech = new DrawTextureTechnique();
+        m_pDrawTextureTech = new DisplayScreenTechnique();
         if (!m_pDrawTextureTech->Init()) {
             printf("Error initializing the draw texture technique\n");
             return false;
@@ -156,10 +156,13 @@ public:
     {
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        glPolygonMode(GL_FRONT, GL_FILL); 
+        glPolygonMode(GL_FRONT, GL_LINE); 
+        glFrontFace(GL_CW);
+        glCullFace(GL_BACK);
+        glEnable(GL_CULL_FACE);
         
         m_shadowMapFBO.BindForReading(GL_TEXTURE0);
-        // m_pDebug->Bind(GL_TEXTURE0);
+        // m_pDebugTexture->Bind(GL_TEXTURE0);
 
         m_pDrawTextureTech->Enable();
         m_pDrawTextureTech->SetTextureUnit(GL_TEXTURE0);
@@ -188,7 +191,7 @@ public:
  private:
 
     ShadowMapTechnique*   m_pShadowMapTech;
-    DrawTextureTechnique* m_pDrawTextureTech;
+    DisplayScreenTechnique* m_pDrawTextureTech;
     Camera*   m_pGameCamera;
     float     m_scale;
     SpotLight m_spotLight;

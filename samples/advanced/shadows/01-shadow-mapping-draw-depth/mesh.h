@@ -80,7 +80,7 @@ private:
         void Init(const std::vector<Vertex>& Vertices,
                   const std::vector<unsigned int>& Indices);
 
-        GLuint VB;
+        GLuint VB,VAO;
         GLuint IB;
         unsigned int NumIndices;
         unsigned int MaterialIndex;

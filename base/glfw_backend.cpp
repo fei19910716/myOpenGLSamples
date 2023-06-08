@@ -174,10 +174,6 @@ void GLFWBackendRun(ICallbacks* pCallbacks)
         exit(1);
     }
 
-    glFrontFace(GL_CW);
-    glCullFace(GL_BACK);
-    glEnable(GL_CULL_FACE);
-
     if (s_glfw_WithDepth) {
         glEnable(GL_DEPTH_TEST);
     }
