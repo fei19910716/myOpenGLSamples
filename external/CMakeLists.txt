@@ -3,9 +3,6 @@
 add_library(external INTERFACE)
 
 set(external_libs
-    glut
-    glew
-
     glad
     glfw
 

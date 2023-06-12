@@ -1,21 +1,3 @@
-/*
-
-        Copyright 2014 Etay Meiri
-
-    This program is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
-
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with this program.  If not, see <http://www.gnu.org/licenses/>.
-*/
-
 
 #include "app.h"
 
@@ -28,9 +10,9 @@ Markup sMarkup = { (char*)"Arial", 64, 1, 0, 0.0, 0.0,
                    0, {0,0,0,1}, 0, {0,0,0,1} };
 #endif
 
-OgldevApp::OgldevApp()
+App::App()
 #ifndef _WIN32
-           : m_fontRenderer(sMarkup)
+    : m_fontRenderer(sMarkup)
 #endif
 {
     m_frameCount = 0;
@@ -44,7 +26,7 @@ OgldevApp::OgldevApp()
 /**
  * caculate the frame count per second(fps)
 */
-void OgldevApp::CalcFPS()
+void App::CalcFPS()
 {
     m_frameCount++;
 
@@ -57,7 +39,7 @@ void OgldevApp::CalcFPS()
     }
 }
 
-void OgldevApp::RenderFPS()
+void App::RenderFPS()
 {
     char text[32];
     ZERO_MEM(text);
@@ -71,7 +53,7 @@ void OgldevApp::RenderFPS()
 /**
  * app total running time since start
 */
-float OgldevApp::GetRunningTime()
+float App::GetRunningTime()
 {
     float RunningTime = (float)((double)GetCurrentTimeMillis() - (double)m_startTime) / 1000.0f;
     return RunningTime;

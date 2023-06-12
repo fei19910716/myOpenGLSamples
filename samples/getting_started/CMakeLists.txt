@@ -10,6 +10,7 @@ if(BUILD_ALL_SAMPLES)
         endif()
     endforeach()
 else()
-    add_subdirectory(getting_started)
+    add_subdirectory(01-hello-window)
+    add_subdirectory(02-hello-triangle)
 endif()
 

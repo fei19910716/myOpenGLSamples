@@ -1,28 +1,10 @@
-/*
 
-	Copyright 2014 Etay Meiri
+#pragma once
 
-    This program is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
+#include "types.h"
+#include "window_callback.h"
 
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with this program.  If not, see <http://www.gnu.org/licenses/>.
-*/
-
-#ifndef OGLDEV_GLFW_BACKEND_H
-#define	OGLDEV_GLFW_BACKEND_H
-
-#include "dev_types.h"
-#include "dev_callbacks.h"
-
-void GLFWBackendInit(int argc, char** argv, bool WithDepth, bool WithStencil);
+void GLFWBackendInit(int argc, char** argv);
 
 void GLFWBackendTerminate();
 
@@ -36,5 +18,4 @@ void GLFWBackendLeaveMainLoop();
 
 void GLFWBackendSetMousePos(uint x, uint y);
 
-OGLDEV_KEY GLFWKeyToOGLDEVKey(uint Key);
-#endif
+KEY GLFWKeyToKey(uint Key);

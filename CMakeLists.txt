@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.4 FATAL_ERROR)
 
-project(myOgldev)
+project(myProject)
 
 # set user defined module path, when use find_package to search library, the cmake will also search this path.
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
