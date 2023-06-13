@@ -1,10 +1,11 @@
 
-#ifndef TECHNIQUE_H
-#define TECHNIQUE_H
+#pragma once
 
 #include <list>
 
 #include <glad/glad.h>
+
+#include "base/utils.h"
 
 /**
  * Technique represents the shader program 
@@ -13,27 +14,25 @@ class Technique
 {
 public:
 
-    Technique();
+    Technique(const char* pVertexPath,const char* pFragmentPath);
 
     virtual ~Technique();
-
-    virtual bool Init();
 
     // Use the program
     void Enable();
 
-    GLuint GetProgram() const { return m_shaderProg; }
+    bool Valid() const { return m_shaderProgram != 0 && m_shaderProgram != INVALID_OGL_VALUE; }
 
 protected:
 
     bool AddShader(GLenum ShaderType, const char* pFilename);
 
     // Link the program
-    bool Finalize();
+    bool Link();
 
     GLint GetUniformLocation(const char* pUniformName);
 
-    GLuint m_shaderProg = 0;
+    GLuint m_shaderProgram = INVALID_OGL_VALUE;
 
 private:
 
@@ -41,4 +40,3 @@ private:
     ShaderObjList m_shaderObjList;
 };
 
-#endif  /* TECHNIQUE_H */

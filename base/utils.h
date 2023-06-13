@@ -27,12 +27,10 @@
 
 bool        ReadFile(const char* fileName, std::string& outFile);
 long long   GetCurrentTimeMillis();
-void        FileError(const char* pFileName, uint line, const char* pErrorMsg);
 void        DevError(const char* pFileName, uint line, const char* msg, ... );
 
 
 #define DEV_ERROR(msg, ...)         DevError(__FILE__, __LINE__, msg, __VA_ARGS__)
-#define FILE_ERROR(ErrorMsg)        FileError(__FILE__, __LINE__, ErrorMsg);
 #define ZERO_MEM(a)                 memset(a, 0, sizeof(a))
 #define GLCheckError()              (glGetError() == GL_NO_ERROR)
 #define INVALID_UNIFORM_LOCATION    0xffffffff

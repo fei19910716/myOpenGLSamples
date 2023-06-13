@@ -13,5 +13,8 @@ else()
     add_subdirectory(01-hello-window)
     add_subdirectory(02-hello-triangle)
     add_subdirectory(03-index-draw)
+    add_subdirectory(04-shader-uniform)
+    add_subdirectory(05-vertex-attributes)
+    add_subdirectory(06-texture)
 endif()
 

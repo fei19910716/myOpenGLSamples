@@ -28,22 +28,10 @@ bool ReadFile(const char* pFileName, std::string& outFile)
         ret = true;
     }
     else {
-        FILE_ERROR(pFileName);
+        DEV_ERROR("unable to open file %s",pFileName);
     }
 
     return ret;
-}
-
-
-void FileError(const char* pFileName, uint line, const char* pErrorMsg)
-{
-#ifdef _WIN32
-    char msg[1000];
-    _snprintf_s(msg, sizeof(msg), "%s:%d: unable to open file `%s`", pFileName, line, pErrorMsg);
-    MessageBoxA(NULL, msg, NULL, 0);
-#else
-    fprintf(stderr, "%s:%d: unable to open file `%s`\n", pFileName, line, pErrorMsg);
-#endif
 }
 
 

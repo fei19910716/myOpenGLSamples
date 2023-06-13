@@ -13,38 +13,27 @@ Texture::Texture(GLenum TextureTarget, const std::string& FileName)
 {
     m_textureTarget = TextureTarget;
     m_fileName      = FileName;
+
+    if(FileName.empty()){
+        DEV_ERROR("FileName is empty");
+        return;
+    }
+    
+    Load(m_fileName);
+}
+
+Texture::~Texture(){
+    glDeleteTextures(1,&m_textureObj);
 }
 
 
-Texture::Texture(GLenum TextureTarget)
-{
-    m_textureTarget = TextureTarget;
-}
-
-
-void Texture::Load(u32 BufferSize, void* pData)
+bool Texture::Load(u32 BufferSize, void* pData)
 {
     void* image_data = stbi_load_from_memory((const stbi_uc*)pData, BufferSize, &m_imageWidth, &m_imageHeight, &m_imageBPP, 0);
 
-    LoadInternal(image_data);
-
-    stbi_image_free(image_data);
-}
-
-bool Texture::Load()
-{
-    stbi_set_flip_vertically_on_load(1);
-
-    unsigned char* image_data = stbi_load(m_fileName.c_str(), &m_imageWidth, &m_imageHeight, &m_imageBPP, 0);
-
-    if (!image_data) {
-        ERROR("Can't load texture from '%s' - %s\n", m_fileName.c_str(), stbi_failure_reason());
-        exit(0);
+    if(!LoadInternal(image_data)){
+        return false;
     }
-
-    printf("Width %d, height %d, bpp %d\n", m_imageWidth, m_imageHeight, m_imageBPP);
-
-    LoadInternal(image_data);
 
     stbi_image_free(image_data);
 
@@ -52,27 +41,42 @@ bool Texture::Load()
 }
 
 
-void Texture::Load(const std::string& Filename)
+bool Texture::Load(const std::string& Filename)
 {
     m_fileName = Filename;
 
-    if (!Load()) {
-        exit(0);
+    stbi_set_flip_vertically_on_load(1);
+
+    unsigned char* image_data = stbi_load(m_fileName.c_str(), &m_imageWidth, &m_imageHeight, &m_imageBPP, 0);
+
+    if (!image_data) {
+        DEV_ERROR("Can't load texture from '%s' - %s\n", m_fileName.c_str(), stbi_failure_reason());
+        return false;
     }
+
+    printf("Width %d, height %d, bpp %d\n", m_imageWidth, m_imageHeight, m_imageBPP);
+
+    if(!LoadInternal(image_data)){
+        return false;
+    }
+
+    stbi_image_free(image_data);
+
+    return true;
 }
 
 
-void Texture::LoadRaw(int Width, int Height, int BPP, unsigned char* pData)
+bool Texture::LoadRaw(int Width, int Height, int BPP, unsigned char* pData)
 {
     m_imageWidth = Width;
     m_imageHeight = Height;
     m_imageBPP = BPP;
 
-    LoadInternal(pData);
+    return LoadInternal(pData);
 }
 
 
-void Texture::LoadInternal(void* image_data)
+bool Texture::LoadInternal(void* image_data)
 {
     glGenTextures(1, &m_textureObj);
     glBindTexture(m_textureTarget, m_textureObj);
@@ -92,12 +96,12 @@ void Texture::LoadInternal(void* image_data)
             break;
 
         default:
-            ERROR("Not implemented case\n");
-            exit(0);
+            DEV_ERROR("Not implemented case\n");
+            return false;
         }
     } else {
-        ERROR("Support for texture target %x is not implemented\n", m_textureTarget);
-        exit(1);
+        DEV_ERROR("Support for texture target %x is not implemented\n", m_textureTarget);
+        return false;
     }
 
     glTexParameteri(m_textureTarget, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
@@ -109,6 +113,8 @@ void Texture::LoadInternal(void* image_data)
     glGenerateMipmap(m_textureTarget);
 
     glBindTexture(m_textureTarget, 0);
+
+    return true;
 }
 
 void Texture::Bind(GLenum TextureUnit)
