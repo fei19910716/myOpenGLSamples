@@ -158,3 +158,19 @@ GLint Technique::GetUniformLocation(const char* pUniformName)
 
     return Location;
 }
+
+
+
+bool Technique::SetUniformMatrix4fv(const char* pUniformName,const glm::mat4& value){
+    GLint location = GetUniformLocation(pUniformName);
+    glUniformMatrix4fv(location, 1, GL_FALSE, glm::value_ptr(value));
+
+    return true;
+}
+
+ bool Technique::SetSamplerUnit(const char* pUniformName,const unsigned int value){
+    GLint location = GetUniformLocation(pUniformName);
+    glUniform1i(location,value);
+
+    return true;
+ }

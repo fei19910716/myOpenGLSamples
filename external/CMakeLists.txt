@@ -8,6 +8,7 @@ set(external_libs
 
     stb
     assimp
+    glm
 )
 
 foreach(external_lib ${external_libs})

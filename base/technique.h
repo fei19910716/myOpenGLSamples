@@ -6,6 +6,7 @@
 #include <glad/glad.h>
 
 #include "base/utils.h"
+#include "base/math.h"
 
 /**
  * Technique represents the shader program 
@@ -20,6 +21,9 @@ public:
 
     // Use the program
     void Enable();
+
+    bool SetUniformMatrix4fv(const char* pUniformName,const glm::mat4& value);
+    bool SetSamplerUnit(const char* pUniformName,const unsigned int value);
 
     bool Valid() const { return m_shaderProgram != 0 && m_shaderProgram != INVALID_OGL_VALUE; }
 
