@@ -22,7 +22,7 @@ public:
     // Use the program
     void Enable();
 
-    bool SetUniformMatrix4fv(const char* pUniformName,const glm::mat4& value);
+    bool SetUniformMat4(const char* pUniformName,const glm::mat4& value);
     bool SetSamplerUnit(const char* pUniformName,const unsigned int value);
 
     bool Valid() const { return m_shaderProgram != 0 && m_shaderProgram != INVALID_OGL_VALUE; }

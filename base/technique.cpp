@@ -161,7 +161,7 @@ GLint Technique::GetUniformLocation(const char* pUniformName)
 
 
 
-bool Technique::SetUniformMatrix4fv(const char* pUniformName,const glm::mat4& value){
+bool Technique::SetUniformMat4(const char* pUniformName,const glm::mat4& value){
     GLint location = GetUniformLocation(pUniformName);
     glUniformMatrix4fv(location, 1, GL_FALSE, glm::value_ptr(value));
 

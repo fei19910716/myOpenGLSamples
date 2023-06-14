@@ -41,7 +41,7 @@ static void KeyCallback(GLFWwindow* pWindow, int key, int scancode, int action, 
 
 static void CursorPosCallback(GLFWwindow* pWindow, double x, double y)
 {
-    s_glfw_pCallbacks->PassiveMouseCB((int)x, (int)y);
+    s_glfw_pCallbacks->MousePassiveCB(x, y);
 }
 
 
@@ -55,7 +55,7 @@ static void MouseButtonCallback(GLFWwindow* pWindow, int Button, int Action, int
 
     glfwGetCursorPos(pWindow, &x, &y);
 
-    s_glfw_pCallbacks->MouseCB(Mouse, State, (int)x, (int)y);
+    s_glfw_pCallbacks->MousePressCB(Mouse, State, x, y);
 }
 
 static void FramebufferSizeCallback(GLFWwindow* window, int width, int height)
@@ -65,12 +65,18 @@ static void FramebufferSizeCallback(GLFWwindow* window, int width, int height)
     s_glfw_pCallbacks->FramebufferSizeCB(width,height);
 }
 
+static void ScrollCallback(GLFWwindow* window, double x, double y)
+{
+    s_glfw_pCallbacks->ScrollCallback(x,y);
+}
+
 static void glfwInitCallbacks()
 {
     glfwSetKeyCallback(s_pWindow, KeyCallback);
     glfwSetCursorPosCallback(s_pWindow, CursorPosCallback);
     glfwSetMouseButtonCallback(s_pWindow, MouseButtonCallback);
     glfwSetFramebufferSizeCallback(s_pWindow, FramebufferSizeCallback);
+    glfwSetScrollCallback(s_pWindow, ScrollCallback);
 }
 
 void GLFWErrorCallback(int error, const char* description)
