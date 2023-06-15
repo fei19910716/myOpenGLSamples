@@ -60,7 +60,7 @@ bool Technique::AddShader(GLenum ShaderType, const char* pFilename)
 {
     std::string s;
 
-    if (!ReadFile(pFilename, s)) {
+    if (!Utils::ReadFile(pFilename, s)) {
         return false;
     }
 

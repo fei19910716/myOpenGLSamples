@@ -8,4 +8,5 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin/")
 
 option(BUILD_ALL_SAMPLES "Build all samples" OFF)
 
-add_definitions(-DUSE_GLFW_BACKEND)
+configure_file(${CMAKE_SOURCE_DIR}/configuration/root_directory.h.in ${CMAKE_SOURCE_DIR}/configuration/root_directory.h)
+include_directories(${CMAKE_SOURCE_DIR}/configuration)

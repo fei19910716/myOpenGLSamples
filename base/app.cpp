@@ -19,7 +19,7 @@ App::App()
     m_fpsStartTime = 0;
     m_fps = 0;
 
-    m_previousFrameTime = m_fpsStartTime = m_startTime = GetCurrentTimeMillis(); // App开始运行的时间
+    m_previousFrameTime = m_fpsStartTime = m_startTime = Utils::GetCurrentTimeMillis(); // App开始运行的时间
 }
 
 
@@ -30,7 +30,7 @@ void App::CalculateFPS()
 {
     m_fpsFrameCount++;
 
-    long long currentTime = GetCurrentTimeMillis();
+    long long currentTime = Utils::GetCurrentTimeMillis();
 
     if (currentTime - m_fpsStartTime >= 1000) { // FPS为1秒的帧数
         m_fpsStartTime = currentTime;
@@ -55,7 +55,7 @@ void App::DisplayFPS()
 */
 float App::GetRunningTime()
 {
-    float RunningTime = (float)((double)GetCurrentTimeMillis() - (double)m_startTime) / 1000.0f;
+    float RunningTime = (float)((double)Utils::GetCurrentTimeMillis() - (double)m_startTime) / 1000.0f;
     return RunningTime;
 }
 
@@ -65,7 +65,7 @@ float App::GetStartTime(){
 }
 
 float App::GetFrameTime(){
-    long long currentTime = GetCurrentTimeMillis();
+    long long currentTime = Utils::GetCurrentTimeMillis();
     float frameTime = (float)((double)currentTime - (double)m_previousFrameTime) / 1000.0f;
     m_previousFrameTime = currentTime;
 

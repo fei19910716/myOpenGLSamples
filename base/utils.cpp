@@ -9,8 +9,17 @@
 #include <fstream>
 
 #include "utils.h"
+#include "root_directory.h"
 
-bool ReadFile(const char* pFileName, std::string& outFile)
+std::string Utils::getAsset(const std::string& path){
+    static char const * givenRoot = logl_root;
+    static std::string root = (givenRoot != nullptr ? givenRoot : std::string());
+
+    return root + std::string("/data/") + path;
+}
+
+
+bool Utils::ReadFile(const char* pFileName, std::string& outFile)
 {
     std::ifstream f(pFileName);
 
@@ -35,7 +44,7 @@ bool ReadFile(const char* pFileName, std::string& outFile)
 }
 
 
-void DevError(const char* pFileName, uint line, const char* format, ...)
+void Utils::DevError(const char* pFileName, uint line, const char* format, ...)
 {
     char msg[1000];
     va_list args;
@@ -53,7 +62,7 @@ void DevError(const char* pFileName, uint line, const char* format, ...)
 }
 
 
-long long GetCurrentTimeMillis()
+long long Utils::GetCurrentTimeMillis()
 {
 #ifdef _WIN32
     return GetTickCount();

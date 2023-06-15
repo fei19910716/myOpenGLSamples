@@ -167,8 +167,8 @@ private:
     }
 
     void CreateTexture(){
-        diffuseMap =  new Texture(GL_TEXTURE_2D,"textures/container2.png");
-        specularMap = new Texture(GL_TEXTURE_2D,"textures/container2_specular.png");
+        diffuseMap =  new Texture(GL_TEXTURE_2D,Utils::getAsset("textures/container2.png"));
+        specularMap = new Texture(GL_TEXTURE_2D,Utils::getAsset("textures/container2_specular.png"));
     }
 
     void CreateCamera(){

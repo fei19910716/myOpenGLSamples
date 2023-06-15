@@ -8,15 +8,15 @@ add_executable(${target} ${src_files})
 target_link_libraries(${target} PUBLIC base)
 
 
-add_custom_command(TARGET ${target} POST_BUILD
-    COMMAND
-        ${CMAKE_COMMAND} -E copy_if_different ${CMAKE_CURRENT_SOURCE_DIR}/2.1.lighting.vs ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}${CMAKE_BUILD_TYPE}/shaders/2.1.lighting.vs
-    COMMAND
-        ${CMAKE_COMMAND} -E copy_if_different ${CMAKE_CURRENT_SOURCE_DIR}/2.1.lighting.fs ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}${CMAKE_BUILD_TYPE}/shaders/2.1.lighting.fs
-    COMMAND
-        ${CMAKE_COMMAND} -E copy_if_different ${CMAKE_CURRENT_SOURCE_DIR}/2.1.light_cube.vs ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}${CMAKE_BUILD_TYPE}/shaders/2.1.light_cube.vs
-    COMMAND
-        ${CMAKE_COMMAND} -E copy_if_different ${CMAKE_CURRENT_SOURCE_DIR}/2.1.light_cube.fs ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}${CMAKE_BUILD_TYPE}/shaders/2.1.light_cube.fs
-    COMMENT
-        "Custom command copy shader"
-)
+file(GLOB shader_files
+${CMAKE_CURRENT_SOURCE_DIR}/*.vs
+${CMAKE_CURRENT_SOURCE_DIR}/*.fs
+${CMAKE_CURRENT_SOURCE_DIR}/*.tcs
+${CMAKE_CURRENT_SOURCE_DIR}/*.tes
+${CMAKE_CURRENT_SOURCE_DIR}/*.gs
+${CMAKE_CURRENT_SOURCE_DIR}/*.cs)
+
+
+foreach(shader_file ${shader_files})
+    copy_shader(${target} ${shader_file})
+endforeach()
