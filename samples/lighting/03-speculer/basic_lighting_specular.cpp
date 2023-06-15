@@ -16,6 +16,7 @@ float lastX = SCR_WIDTH / 2.0f;
 float lastY = SCR_HEIGHT / 2.0f;
 bool firstMouse = true;
 
+
 // lighting
 constexpr const glm::vec3 lightPos(1.2f, 1.0f, 2.0f);
 constexpr const glm::vec3 lightColor(0.8f, 0.8f, 0.8f);
@@ -38,12 +39,13 @@ public:
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         glEnable(GL_DEPTH_TEST);
-        
+
         // be sure to activate shader when setting uniforms/drawing objects
         lightingShader->Enable();
         lightingShader->SetUniformVec3("objectColor", objectColor);
         lightingShader->SetUniformVec3("lightColor", lightColor);
         lightingShader->SetUniformVec3("lightPos", lightPos);
+        lightingShader->SetUniformVec3("viewPos", camera->Position);
 
         // view/projection transformations
         glm::mat4 projection = glm::perspective(glm::radians(camera->FOV), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
@@ -53,7 +55,7 @@ public:
 
         // world transformation
         glm::mat4 model = glm::mat4(1.0f);
-        model = glm::rotate(model,  (float)glfwGetTime(), glm::vec3(0.0f, 1.0f, 0.0f));
+        model = glm::rotate(model, (float)(0.2 * glfwGetTime()), glm::vec3(0.0f, 1.0f, 0.0f));
         lightingShader->SetUniformMat4("model", model);
 
         // render the cube
@@ -145,8 +147,8 @@ public:
 private:
 
     void CreateShader(){
-        lightingShader = new Technique("shaders/2.1.lighting.vs","shaders/2.1.lighting.fs");
-        lightCubeShader = new Technique("shaders/2.1.light_cube.vs","shaders/2.1.light_cube.fs");
+        lightingShader = new Technique("shaders/2.2.lighting.vs","shaders/2.2.lighting.fs");
+        lightCubeShader = new Technique("shaders/2.2.light_cube.vs","shaders/2.2.light_cube.fs");
     }
 
     void CreateCamera(){
@@ -235,5 +237,6 @@ int main(int argc, char** argv)
     BackendRun(new SampleApp);
 
     BackendTerminate();
+
     return 0;
 }

@@ -159,6 +159,13 @@ GLint Technique::GetUniformLocation(const char* pUniformName)
     return Location;
 }
 
+bool Technique::SetUniformFloat(const char* pUniformName,const float& value){
+    GLint location = GetUniformLocation(pUniformName);
+    glUniform1f(location,value);
+
+    return true;
+}
+
 bool Technique::SetUniformVec3(const char* pUniformName,const glm::vec3& value){
     GLint location = GetUniformLocation(pUniformName);
     glUniform3fv(location, 1, glm::value_ptr(value));

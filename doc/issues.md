@@ -7,3 +7,5 @@
 
 
 3, 改变cube的model矩阵diffuse光照效果不对。
+    需要将position和normal等顶点属性都变换到世界空间计算光照
+    Normal = vec3(model * vec4(aNormal, 1.0));
