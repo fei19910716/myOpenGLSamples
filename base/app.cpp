@@ -15,31 +15,31 @@ App::App()
     : m_fontRenderer(sMarkup)
 #endif
 {
-    m_frameCount = 0;
-    m_frameTime = 0;
+    m_fpsFrameCount = 0;
+    m_fpsStartTime = 0;
     m_fps = 0;
 
-    m_frameTime = m_startTime = GetCurrentTimeMillis();
+    m_previousFrameTime = m_fpsStartTime = m_startTime = GetCurrentTimeMillis(); // App开始运行的时间
 }
 
 
 /**
  * caculate the frame count per second(fps)
 */
-void App::CalcFPS()
+void App::CalculateFPS()
 {
-    m_frameCount++;
+    m_fpsFrameCount++;
 
-    long long time = GetCurrentTimeMillis();
+    long long currentTime = GetCurrentTimeMillis();
 
-    if (time - m_frameTime >= 1000) {
-        m_frameTime = time;
-        m_fps = m_frameCount;
-        m_frameCount = 0;
+    if (currentTime - m_fpsStartTime >= 1000) { // FPS为1秒的帧数
+        m_fpsStartTime = currentTime;
+        m_fps = m_fpsFrameCount;
+        m_fpsFrameCount = 0;
     }
 }
 
-void App::RenderFPS()
+void App::DisplayFPS()
 {
     char text[32];
     ZERO_MEM(text);
@@ -57,4 +57,17 @@ float App::GetRunningTime()
 {
     float RunningTime = (float)((double)GetCurrentTimeMillis() - (double)m_startTime) / 1000.0f;
     return RunningTime;
+}
+
+float App::GetStartTime(){
+    float time = (float)((double)m_startTime) / 1000.0f;
+    return time;
+}
+
+float App::GetFrameTime(){
+    long long currentTime = GetCurrentTimeMillis();
+    float frameTime = (float)((double)currentTime - (double)m_previousFrameTime) / 1000.0f;
+    m_previousFrameTime = currentTime;
+
+    return frameTime;
 }

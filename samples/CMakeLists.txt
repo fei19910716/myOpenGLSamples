@@ -10,6 +10,7 @@ if(BUILD_ALL_SAMPLES)
         endif()
     endforeach()
 else()
-    add_subdirectory(basic-opengl)
+    # add_subdirectory(basic-opengl)
+    add_subdirectory(lighting)
 endif()
 

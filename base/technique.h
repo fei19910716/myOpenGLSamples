@@ -22,6 +22,7 @@ public:
     // Use the program
     void Enable();
 
+    bool SetUniformVec3(const char* pUniformName,const glm::vec3& value);
     bool SetUniformMat4(const char* pUniformName,const glm::mat4& value);
     bool SetSamplerUnit(const char* pUniformName,const unsigned int value);
 

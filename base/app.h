@@ -9,19 +9,23 @@ class App
 protected:
 	App();
 
-	void CalcFPS();
+	void CalculateFPS();
 
-	void RenderFPS();
+	void DisplayFPS();
 
 	float GetRunningTime();
+	float GetStartTime();
+	float GetFrameTime();
 
 protected:
 #ifndef _WIN32
 	FontRenderer m_fontRenderer;
 #endif
 private:
-	long long 	m_frameTime;
+	long long 	m_fpsStartTime;
+	int 		m_fpsFrameCount;
+
 	long long 	m_startTime;
-	int 		m_frameCount;
+	long long 	m_previousFrameTime;
 	int 		m_fps;
 };
