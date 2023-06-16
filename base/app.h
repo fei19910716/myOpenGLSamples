@@ -4,6 +4,9 @@
 #ifndef _WIN32
 #include "freetypeGL.h"
 #endif
+
+#include "base/window_backend.h"
+
 class App
 {
 protected:

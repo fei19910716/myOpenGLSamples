@@ -14,6 +14,7 @@ else()
     add_subdirectory(02-diffuse)
     add_subdirectory(03-speculer)
     add_subdirectory(04-directional-light)
-    # add_subdirectory(05-point-light)
+    add_subdirectory(05-point-light)
+    add_subdirectory(06-spot-light)
 endif()
 

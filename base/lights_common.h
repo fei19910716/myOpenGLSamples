@@ -73,11 +73,13 @@ class SpotLight : public PointLight
 public:
     glm::vec3 Direction;
     float Cutoff;
+    float OuterCutOff; // for soft edges
 
     SpotLight(): PointLight()
     {
         Direction = glm::vec3(0.0f, 0.0f, 0.0f);
         Cutoff = 0.0f;
+        OuterCutOff = 0.0f;
     }
 };
 

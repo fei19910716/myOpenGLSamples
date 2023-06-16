@@ -143,7 +143,7 @@ void Technique::Enable()
 }
 
 
-GLint Technique::GetUniformLocation(const char* pUniformName)
+GLint Technique::GetUniformLocation(const char* pUniformName) const
 {
     if(!Valid()){
         DEV_ERROR("program is invalid.");
@@ -159,28 +159,28 @@ GLint Technique::GetUniformLocation(const char* pUniformName)
     return Location;
 }
 
-bool Technique::SetUniformFloat(const char* pUniformName,const float& value){
+bool Technique::SetUniformFloat(const char* pUniformName,const float& value) const{
     GLint location = GetUniformLocation(pUniformName);
     glUniform1f(location,value);
 
     return true;
 }
 
-bool Technique::SetUniformVec3(const char* pUniformName,const glm::vec3& value){
+bool Technique::SetUniformVec3(const char* pUniformName,const glm::vec3& value) const{
     GLint location = GetUniformLocation(pUniformName);
     glUniform3fv(location, 1, glm::value_ptr(value));
 
     return true;
 }
 
-bool Technique::SetUniformMat4(const char* pUniformName,const glm::mat4& value){
+bool Technique::SetUniformMat4(const char* pUniformName,const glm::mat4& value) const{
     GLint location = GetUniformLocation(pUniformName);
     glUniformMatrix4fv(location, 1, GL_FALSE, glm::value_ptr(value));
 
     return true;
 }
 
- bool Technique::SetSamplerUnit(const char* pUniformName,const unsigned int value){
+ bool Technique::SetSamplerUnit(const char* pUniformName,const unsigned int value) const{
     GLint location = GetUniformLocation(pUniformName);
     glUniform1i(location,value);
 

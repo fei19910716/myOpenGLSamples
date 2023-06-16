@@ -5,7 +5,7 @@
 #define MouseSensitivity    0.1f
 
 Camera::Camera(glm::vec3 position, glm::vec3 front, glm::vec3 up) : 
-    FOV(45.0f),Yaw(-90.0f),Pitch(0.0f),
+    FOV(45.0f),Yaw(-90.0f),Pitch(0.0f), // Set these values to make the front equal to our caculations
     Position(position),Front(front),WorldUp(up)
 {
     UpdateCameraVectors();

@@ -1,10 +1,9 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 
-#include "base/window_backend.h"
 #include "base/app.h"
 #include "base/technique.h"
-
+#include "base/vertices.h"
 
 // settings
 const unsigned int SCR_WIDTH = 800;
@@ -67,20 +66,11 @@ public:
 private:
 
     void CreateShader(){
-        shaderProgram = new Technique("shaders/05-vertex-attributes.vs","shaders/05-vertex-attributes.fs");
+        shaderProgram = new Technique("shaders/3.3.shader.vs","shaders/3.3.shader.fs");
     }
 
 
     void CreateVertexBuffer(){
-        // set up vertex data (and buffer(s)) and configure vertex attributes
-        // ------------------------------------------------------------------
-        float vertices[] = {
-            // positions         // colors
-            0.5f, -0.5f, 0.0f,  1.0f, 0.0f, 0.0f,  // bottom right
-            -0.5f, -0.5f, 0.0f,  0.0f, 1.0f, 0.0f,  // bottom left
-            0.0f,  0.5f, 0.0f,  0.0f, 0.0f, 1.0f   // top 
-
-        };
 
         glGenVertexArrays(1, &VAO);
         glGenBuffers(1, &VBO);
@@ -88,7 +78,7 @@ private:
         glBindVertexArray(VAO);
 
         glBindBuffer(GL_ARRAY_BUFFER, VBO);
-        glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+        glBufferData(GL_ARRAY_BUFFER, sizeof(Model::TrianglePosColVertices), Model::TrianglePosColVertices, GL_STATIC_DRAW);
 
         // position attribute
         glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
