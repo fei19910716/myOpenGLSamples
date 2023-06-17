@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/types.h"
+#include "base/log_system.h"
 
 #ifdef _WIN64
     #define SNPRINTF _snprintf_s
@@ -23,16 +24,17 @@
     #define SRANDOM srandom(getpid())
 #endif
 
-namespace Utils{
+namespace UTILS{
 
 std::string getAsset(const std::string& path);
 bool        ReadFile(const char* fileName, std::string& outFile);
 long long   GetCurrentTimeMillis();
 void        DevError(const char* pFileName, uint line, const char* msg, ... );
-
+void        DevInfo (const char* pFileName, uint line, const char* msg, ... );
 }
 
-#define DEV_ERROR(msg, ...)         Utils::DevError(__FILE__, __LINE__, msg, __VA_ARGS__)
+#define DEV_ERROR(msg, ...)         UTILS::DevError(__FILE__, __LINE__, msg, __VA_ARGS__)
+#define DEV_INFO(msg, ...)          UTILS::DevInfo (__FILE__, __LINE__, msg, __VA_ARGS__)
 #define ZERO_MEM(a)                 memset(a, 0, sizeof(a))
 #define GLCheckError()              (glGetError() == GL_NO_ERROR)
 #define INVALID_UNIFORM_LOCATION    0xffffffff

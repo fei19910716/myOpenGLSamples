@@ -28,7 +28,7 @@ public:
     bool SetSamplerUnit(const char* pUniformName,const unsigned int value) const;
 
     bool Valid() const { return m_shaderProgram != 0 && m_shaderProgram != INVALID_OGL_VALUE; }
-
+    GLuint GetProgram() const { return m_shaderProgram; }
 protected:
 
     bool AddShader(GLenum ShaderType, const char* pFilename);

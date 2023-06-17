@@ -1,6 +1,6 @@
 #pragma once
 
-namespace Model{
+namespace MODEL{
 
 static const float QuadPosColTexVertices[] = {
     // positions          // colors           // texture coords

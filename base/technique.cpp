@@ -2,7 +2,7 @@
 #include "technique.h"
 
 #include <string.h>
-
+#include "base/exception.h"
 
 Technique::Technique(const char* pVertexPath, const char* pFragmentPath)
 {
@@ -60,7 +60,7 @@ bool Technique::AddShader(GLenum ShaderType, const char* pFilename)
 {
     std::string s;
 
-    if (!Utils::ReadFile(pFilename, s)) {
+    if (!UTILS::ReadFile(pFilename, s)) {
         return false;
     }
 
@@ -150,13 +150,7 @@ GLint Technique::GetUniformLocation(const char* pUniformName) const
         return INVALID_UNIFORM_LOCATION;
     }
 
-    GLuint Location = glGetUniformLocation(m_shaderProgram, pUniformName);
-
-    if (Location == INVALID_UNIFORM_LOCATION) {
-        DEV_ERROR("Warning! Unable to get the location of uniform '%s'\n", pUniformName);
-    }
-
-    return Location;
+    return glGetUniformLocation(m_shaderProgram, pUniformName);
 }
 
 bool Technique::SetUniformFloat(const char* pUniformName,const float& value) const{
@@ -182,6 +176,12 @@ bool Technique::SetUniformMat4(const char* pUniformName,const glm::mat4& value) 
 
  bool Technique::SetSamplerUnit(const char* pUniformName,const unsigned int value) const{
     GLint location = GetUniformLocation(pUniformName);
+
+    if (location == INVALID_UNIFORM_LOCATION) {
+        DEV_ERROR("Warning! Unable to get the location of uniform '%s'\n", pUniformName);
+        return false;
+    }
+
     glUniform1i(location,value);
 
     return true;

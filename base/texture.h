@@ -5,10 +5,18 @@
 
 #include <glad/glad.h>
 
+enum TextureType{
+    General,
+    Diffuse,
+    Speculer,
+    Height,
+    Normal
+};
+
 class Texture
 {
 public:
-    Texture(GLenum TextureTarget, const std::string& FileName);
+    Texture(GLenum TextureTarget, const std::string& FileName, TextureType type = TextureType::General);
 
     ~Texture();
 
@@ -21,20 +29,23 @@ public:
     // Must be called at least once for the specific texture unit
     void Bind(GLenum TextureUnit);
 
-    void GetImageSize(int& ImageWidth, int& ImageHeight)
+    inline void GetImageSize(int& ImageWidth, int& ImageHeight)
     {
         ImageWidth = m_imageWidth;
         ImageHeight = m_imageHeight;
     }
 
-    GLuint GetTexture() const { return m_textureObj; }
+    inline GLuint      GetTextureID()   const { return m_ID; }
+    inline TextureType GetTextureType() const { return m_textureType; }
+    inline std::string GetFilePath()    const { return m_filePath; }
 
 private:
     bool LoadInternal(void* image_data);
 
-    std::string m_fileName;
+    std::string m_filePath;
+    TextureType m_textureType;
     GLenum m_textureTarget;
-    GLuint m_textureObj;
+    GLuint m_ID;
     int m_imageWidth = 0;
     int m_imageHeight = 0;
     int m_imageBPP = 0;

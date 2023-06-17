@@ -9,21 +9,22 @@
 #include "stb/stb_image.h"
 #include "stb/stb_image_write.h"
 
-Texture::Texture(GLenum TextureTarget, const std::string& FileName)
+Texture::Texture(GLenum TextureTarget, const std::string& FileName, TextureType type)
 {
     m_textureTarget = TextureTarget;
-    m_fileName      = FileName;
+    m_filePath      = FileName;
+    m_textureType   = type;
 
     if(FileName.empty()){
         DEV_ERROR("FileName is empty");
         return;
     }
     
-    Load(m_fileName);
+    Load(m_filePath);
 }
 
 Texture::~Texture(){
-    glDeleteTextures(1,&m_textureObj);
+   glDeleteTextures(1,&m_ID);
 }
 
 
@@ -43,18 +44,16 @@ bool Texture::Load(u32 BufferSize, void* pData)
 
 bool Texture::Load(const std::string& Filename)
 {
-    m_fileName = Filename;
-
     stbi_set_flip_vertically_on_load(1);
 
-    unsigned char* image_data = stbi_load(m_fileName.c_str(), &m_imageWidth, &m_imageHeight, &m_imageBPP, 0);
+    unsigned char* image_data = stbi_load(m_filePath.c_str(), &m_imageWidth, &m_imageHeight, &m_imageBPP, 0);
 
     if (!image_data) {
-        DEV_ERROR("Can't load texture from '%s' - %s\n", m_fileName.c_str(), stbi_failure_reason());
+        DEV_ERROR("Can't load texture from '%s' - %s\n", m_filePath.c_str(), stbi_failure_reason());
         return false;
     }
 
-    printf("Width %d, height %d, bpp %d\n", m_imageWidth, m_imageHeight, m_imageBPP);
+    printf("Name: %s, Width %d, height %d, bpp %d\n", Filename.c_str(), m_imageWidth, m_imageHeight, m_imageBPP);
 
     if(!LoadInternal(image_data)){
         return false;
@@ -78,8 +77,8 @@ bool Texture::LoadRaw(int Width, int Height, int BPP, unsigned char* pData)
 
 bool Texture::LoadInternal(void* image_data)
 {
-    glGenTextures(1, &m_textureObj);
-    glBindTexture(m_textureTarget, m_textureObj);
+    glGenTextures(1, &m_ID);
+    glBindTexture(m_textureTarget, m_ID);
 
     if (m_textureTarget == GL_TEXTURE_2D) {
         switch (m_imageBPP) {
@@ -120,5 +119,5 @@ bool Texture::LoadInternal(void* image_data)
 void Texture::Bind(GLenum TextureUnit)
 {
     glActiveTexture(TextureUnit);
-    glBindTexture(m_textureTarget, m_textureObj);
+    glBindTexture(m_textureTarget, m_ID);
 }

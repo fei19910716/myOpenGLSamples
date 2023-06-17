@@ -11,7 +11,7 @@
 #include "utils.h"
 #include "root_directory.h"
 
-std::string Utils::getAsset(const std::string& path){
+std::string UTILS::getAsset(const std::string& path){
     static char const * givenRoot = logl_root;
     static std::string root = (givenRoot != nullptr ? givenRoot : std::string());
 
@@ -19,7 +19,7 @@ std::string Utils::getAsset(const std::string& path){
 }
 
 
-bool Utils::ReadFile(const char* pFileName, std::string& outFile)
+bool UTILS::ReadFile(const char* pFileName, std::string& outFile)
 {
     std::ifstream f(pFileName);
 
@@ -44,7 +44,7 @@ bool Utils::ReadFile(const char* pFileName, std::string& outFile)
 }
 
 
-void Utils::DevError(const char* pFileName, uint line, const char* format, ...)
+void UTILS::DevError(const char* pFileName, uint line, const char* format, ...)
 {
     char msg[1000];
     va_list args;
@@ -52,6 +52,12 @@ void Utils::DevError(const char* pFileName, uint line, const char* format, ...)
     VSNPRINTF(msg, sizeof(msg), format, args);
     va_end(args);
 
+    char msg2[1000];
+    SNPRINTF(msg2, sizeof(msg2), "%s:%d: %s", pFileName, line, msg);
+
+    Log::error(std::string(msg2));
+
+/*
 #ifdef _WIN32
     char msg2[1000];
     _snprintf_s(msg2, sizeof(msg2), "%s:%d: %s", pFileName, line, msg);
@@ -59,10 +65,25 @@ void Utils::DevError(const char* pFileName, uint line, const char* format, ...)
 #else
     fprintf(stderr, "%s:%d - %s", pFileName, line, msg);
 #endif
+*/
+}
+
+void UTILS::DevInfo (const char* pFileName, uint line, const char* format, ... )
+{
+    char msg[1000];
+    va_list args;
+    va_start(args, format);
+    VSNPRINTF(msg, sizeof(msg), format, args);
+    va_end(args);
+
+    char msg2[1000];
+    SNPRINTF(msg2, sizeof(msg2), "%s:%d: %s", pFileName, line, msg);
+
+    Log::info(std::string(msg2));
 }
 
 
-long long Utils::GetCurrentTimeMillis()
+long long UTILS::GetCurrentTimeMillis()
 {
 #ifdef _WIN32
     return GetTickCount();
