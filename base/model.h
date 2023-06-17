@@ -20,7 +20,7 @@ class Model
 {
 public:
     // model data 
-    vector<Texture*> textures_loaded;	// stores all the textures loaded so far, optimization to make sure textures aren't loaded more than once.
+    vector<GLTexture*> textures_loaded;	// stores all the textures loaded so far, optimization to make sure textures aren't loaded more than once.
     vector<Mesh*>    meshes;
     string directory;
     bool gammaCorrection;
@@ -31,7 +31,7 @@ public:
     ~Model();
 
     // draws the model, and thus all its meshes
-    void Draw(const Technique* shader);
+    void Draw(const GLTechnique* shader);
     
 private:
     // loads a model with supported ASSIMP extensions from file and stores the resulting meshes in the meshes vector.
@@ -44,7 +44,7 @@ private:
 
     // checks all material textures of a given type and loads the textures if they're not loaded yet.
     // the required info is returned as a Texture struct.
-    vector<Texture*> LoadMaterialTextures(aiMaterial *mat, aiTextureType type, TextureType devType);
+    vector<GLTexture*> LoadMaterialTextures(aiMaterial *mat, aiTextureType type, TextureType devType);
 };
 
 }

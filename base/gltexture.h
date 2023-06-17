@@ -13,12 +13,12 @@ enum TextureType{
     Normal
 };
 
-class Texture
+class GLTexture
 {
 public:
-    Texture(GLenum TextureTarget, const std::string& FileName, TextureType type = TextureType::General);
+    GLTexture(GLenum TextureTarget, const std::string& FileName, TextureType type = TextureType::General);
 
-    ~Texture();
+    ~GLTexture();
 
     bool Load(unsigned int BufferSize, void* pData);
 
@@ -27,7 +27,7 @@ public:
     bool LoadRaw(int Width, int Height, int BPP, unsigned char* pData);
 
     // Must be called at least once for the specific texture unit
-    void Bind(GLenum TextureUnit);
+    bool Bind(GLenum TextureUnit) const;
 
     inline void GetImageSize(int& ImageWidth, int& ImageHeight)
     {

@@ -3,8 +3,9 @@
 // holds all OpenGL type declarations
 #include <glad/glad.h> 
 
-#include "base/technique.h"
-#include "base/texture.h"
+#include "base/gltechnique.h"
+#include "base/gltexture.h"
+#include "base/utils.h"
 
 #include <string>
 #include <vector>
@@ -31,11 +32,11 @@ public:
     // mesh Data
     vector<Vertex>        vertices;
     vector<unsigned int>  indices;
-    vector<Texture*>      textures;
+    vector<GLTexture*>      textures;
     unsigned int          VAO, VBO, EBO;
 
     // constructor
-    Mesh(const vector<Vertex>& vertices, const vector<unsigned int>& indices, const vector<Texture*>& textures)
+    Mesh(const vector<Vertex>& vertices, const vector<unsigned int>& indices, const vector<GLTexture*>& textures)
     {
         this->vertices = vertices;
         this->indices  = indices;
@@ -52,7 +53,7 @@ public:
     }
 
     // render the mesh
-    void Draw(const Technique* shader) 
+    void Draw(const GLTechnique* shader) 
     {
         // bind appropriate textures
         unsigned int diffuseNr  = 1;
@@ -82,8 +83,14 @@ public:
             default:
                 break;
             }
-            textures[i]->Bind(GL_TEXTURE0 + i);
-            shader->SetSamplerUnit(samplerName.c_str(), i);
+
+            if(textures[i]->Bind(GL_TEXTURE0 + i) == false){
+                DEV_ERROR("Bind texture fail!");
+            }
+           
+            if(shader->SetSamplerUnit(samplerName.c_str(), i) == false){
+                DEV_ERROR("Uniform location invalid '%s'\n", samplerName.c_str());
+            }
         }
         
         // draw mesh

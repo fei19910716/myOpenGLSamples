@@ -1,10 +1,10 @@
 
-#include "technique.h"
+#include "gltechnique.h"
 
 #include <string.h>
 #include "base/exception.h"
 
-Technique::Technique(const char* pVertexPath, const char* pFragmentPath)
+GLTechnique::GLTechnique(const char* pVertexPath, const char* pFragmentPath)
 {
     if(pVertexPath == nullptr){
         DEV_ERROR("VertexPath is null");
@@ -38,7 +38,7 @@ Technique::Technique(const char* pVertexPath, const char* pFragmentPath)
 }
 
 
-Technique::~Technique()
+GLTechnique::~GLTechnique()
 {
     // Delete the intermediate shader objects that have been added to the program
     // The list will only contain something if shaders were compiled but the object itself
@@ -56,7 +56,7 @@ Technique::~Technique()
 }
 
 // Use this method to add shaders to the program. When finished - call finalize()
-bool Technique::AddShader(GLenum ShaderType, const char* pFilename)
+bool GLTechnique::AddShader(GLenum ShaderType, const char* pFilename)
 {
     std::string s;
 
@@ -100,7 +100,7 @@ bool Technique::AddShader(GLenum ShaderType, const char* pFilename)
 
 // After all the shaders have been added to the program call this function
 // to link and validate the program.
-bool Technique::Link()
+bool GLTechnique::Link()
 {
     GLint Success = 0;
     GLchar ErrorLog[1024] = { 0 };
@@ -133,7 +133,7 @@ bool Technique::Link()
 }
 
 
-void Technique::Enable()
+void GLTechnique::Enable()
 {
     if(!Valid()){
         DEV_ERROR("program is invalid.");
@@ -143,7 +143,7 @@ void Technique::Enable()
 }
 
 
-GLint Technique::GetUniformLocation(const char* pUniformName) const
+GLint GLTechnique::GetUniformLocation(const char* pUniformName) const
 {
     if(!Valid()){
         DEV_ERROR("program is invalid.");
@@ -153,32 +153,31 @@ GLint Technique::GetUniformLocation(const char* pUniformName) const
     return glGetUniformLocation(m_shaderProgram, pUniformName);
 }
 
-bool Technique::SetUniformFloat(const char* pUniformName,const float& value) const{
+bool GLTechnique::SetUniformFloat(const char* pUniformName,const float& value) const{
     GLint location = GetUniformLocation(pUniformName);
     glUniform1f(location,value);
 
     return true;
 }
 
-bool Technique::SetUniformVec3(const char* pUniformName,const glm::vec3& value) const{
+bool GLTechnique::SetUniformVec3(const char* pUniformName,const glm::vec3& value) const{
     GLint location = GetUniformLocation(pUniformName);
     glUniform3fv(location, 1, glm::value_ptr(value));
 
     return true;
 }
 
-bool Technique::SetUniformMat4(const char* pUniformName,const glm::mat4& value) const{
+bool GLTechnique::SetUniformMat4(const char* pUniformName,const glm::mat4& value) const{
     GLint location = GetUniformLocation(pUniformName);
     glUniformMatrix4fv(location, 1, GL_FALSE, glm::value_ptr(value));
 
     return true;
 }
 
- bool Technique::SetSamplerUnit(const char* pUniformName,const unsigned int value) const{
+ bool GLTechnique::SetSamplerUnit(const char* pUniformName,const unsigned int value) const{
     GLint location = GetUniformLocation(pUniformName);
 
     if (location == INVALID_UNIFORM_LOCATION) {
-        DEV_ERROR("Warning! Unable to get the location of uniform '%s'\n", pUniformName);
         return false;
     }
 

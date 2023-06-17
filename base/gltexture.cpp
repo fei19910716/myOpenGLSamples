@@ -3,13 +3,13 @@
 #include <iostream>
 
 #include "utils.h"
-#include "texture.h"
+#include "gltexture.h"
 
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb/stb_image.h"
 #include "stb/stb_image_write.h"
 
-Texture::Texture(GLenum TextureTarget, const std::string& FileName, TextureType type)
+GLTexture::GLTexture(GLenum TextureTarget, const std::string& FileName, TextureType type)
 {
     m_textureTarget = TextureTarget;
     m_filePath      = FileName;
@@ -23,12 +23,12 @@ Texture::Texture(GLenum TextureTarget, const std::string& FileName, TextureType 
     Load(m_filePath);
 }
 
-Texture::~Texture(){
+GLTexture::~GLTexture(){
    glDeleteTextures(1,&m_ID);
 }
 
 
-bool Texture::Load(u32 BufferSize, void* pData)
+bool GLTexture::Load(u32 BufferSize, void* pData)
 {
     void* image_data = stbi_load_from_memory((const stbi_uc*)pData, BufferSize, &m_imageWidth, &m_imageHeight, &m_imageBPP, 0);
 
@@ -42,7 +42,7 @@ bool Texture::Load(u32 BufferSize, void* pData)
 }
 
 
-bool Texture::Load(const std::string& Filename)
+bool GLTexture::Load(const std::string& Filename)
 {
     stbi_set_flip_vertically_on_load(1);
 
@@ -65,7 +65,7 @@ bool Texture::Load(const std::string& Filename)
 }
 
 
-bool Texture::LoadRaw(int Width, int Height, int BPP, unsigned char* pData)
+bool GLTexture::LoadRaw(int Width, int Height, int BPP, unsigned char* pData)
 {
     m_imageWidth = Width;
     m_imageHeight = Height;
@@ -75,7 +75,7 @@ bool Texture::LoadRaw(int Width, int Height, int BPP, unsigned char* pData)
 }
 
 
-bool Texture::LoadInternal(void* image_data)
+bool GLTexture::LoadInternal(void* image_data)
 {
     glGenTextures(1, &m_ID);
     glBindTexture(m_textureTarget, m_ID);
@@ -113,11 +113,13 @@ bool Texture::LoadInternal(void* image_data)
 
     glBindTexture(m_textureTarget, 0);
 
-    return true;
+    return GLCheckError();
 }
 
-void Texture::Bind(GLenum TextureUnit)
+bool GLTexture::Bind(GLenum TextureUnit) const
 {
     glActiveTexture(TextureUnit);
     glBindTexture(m_textureTarget, m_ID);
+
+    return GLCheckError();
 }

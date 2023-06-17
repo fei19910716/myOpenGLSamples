@@ -19,7 +19,7 @@ Model::~Model(){
 }
 
 // draws the model, and thus all its meshes
-void Model::Draw(const Technique* shader)
+void Model::Draw(const GLTechnique* shader)
 {
     for(unsigned int i = 0; i < meshes.size(); i++)
         meshes[i]->Draw(shader);
@@ -68,7 +68,7 @@ Mesh* Model::ProcessMesh(aiMesh *mesh, const aiScene *scene)
     // data to fill
     vector<Vertex> vertices;
     vector<unsigned int> indices;
-    vector<Texture*> textures;
+    vector<GLTexture*> textures;
 
     // walk through each of the mesh's vertices
     for(unsigned int i = 0; i < mesh->mNumVertices; i++)
@@ -131,16 +131,16 @@ Mesh* Model::ProcessMesh(aiMesh *mesh, const aiScene *scene)
     // normal: texture_normalN
 
     // 1. diffuse maps
-    vector<Texture*> diffuseMaps = LoadMaterialTextures(material, aiTextureType_DIFFUSE, TextureType::Diffuse);
+    vector<GLTexture*> diffuseMaps = LoadMaterialTextures(material, aiTextureType_DIFFUSE, TextureType::Diffuse);
     textures.insert(textures.end(), diffuseMaps.begin(), diffuseMaps.end());
     // 2. specular maps
-    vector<Texture*> specularMaps = LoadMaterialTextures(material, aiTextureType_SPECULAR, TextureType::Speculer);
+    vector<GLTexture*> specularMaps = LoadMaterialTextures(material, aiTextureType_SPECULAR, TextureType::Speculer);
     textures.insert(textures.end(), specularMaps.begin(), specularMaps.end());
     // 3. normal maps
-    vector<Texture*> normalMaps = LoadMaterialTextures(material, aiTextureType_NORMALS, TextureType::Normal);
+    vector<GLTexture*> normalMaps = LoadMaterialTextures(material, aiTextureType_NORMALS, TextureType::Normal);
     textures.insert(textures.end(), normalMaps.begin(), normalMaps.end());
     // 4. height maps
-    vector<Texture*> heightMaps = LoadMaterialTextures(material, aiTextureType_HEIGHT, TextureType::Height);
+    vector<GLTexture*> heightMaps = LoadMaterialTextures(material, aiTextureType_HEIGHT, TextureType::Height);
     textures.insert(textures.end(), heightMaps.begin(), heightMaps.end());
     
     // return a mesh object created from the extracted mesh data
@@ -149,9 +149,9 @@ Mesh* Model::ProcessMesh(aiMesh *mesh, const aiScene *scene)
 
 // checks all material textures of a given type and loads the textures if they're not loaded yet.
 // the required info is returned as a Texture struct.
-vector<Texture*> Model::LoadMaterialTextures(aiMaterial *mat, aiTextureType aiType, TextureType devType)
+vector<GLTexture*> Model::LoadMaterialTextures(aiMaterial *mat, aiTextureType aiType, TextureType devType)
 {
-    vector<Texture*> textures;
+    vector<GLTexture*> textures;
     for(unsigned int i = 0; i < mat->GetTextureCount(aiType); i++)
     {
         aiString str;
@@ -171,7 +171,7 @@ vector<Texture*> Model::LoadMaterialTextures(aiMaterial *mat, aiTextureType aiTy
         if(!skip)
         {   
             // if texture hasn't been loaded already, load it
-            Texture* texture = new Texture(GL_TEXTURE_2D, path.c_str(), devType);
+            GLTexture* texture = new GLTexture(GL_TEXTURE_2D, path.c_str(), devType);
             textures.push_back(texture);
             textures_loaded.push_back(texture);  // store it as texture loaded for entire model, to ensure we won't unnecessary load duplicate textures.
         }

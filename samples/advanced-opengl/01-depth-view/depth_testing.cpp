@@ -2,10 +2,11 @@
 #include <GLFW/glfw3.h>
 
 #include "base/app.h"
-#include "base/technique.h"
-#include "base/texture.h"
+#include "base/gltechnique.h"
+#include "base/gltexture.h"
 #include "base/camera.h"
 #include "base/vertices.h"
+#include "base/glvertexarray.h"
 
 
 // settings
@@ -127,7 +128,7 @@ public:
 private:
 
     void CreateShader(){
-        shader = new Technique("shaders/1.1.depth_view.vs","shaders/1.1.depth_view.fs");
+        shader = new GLTechnique("shaders/1.1.depth_view.vs","shaders/1.1.depth_view.fs");
     }
 
     void CreateCamera(){
@@ -135,8 +136,8 @@ private:
     }
 
     void CreateTextures(){
-        cubeTexture = new Texture(GL_TEXTURE_2D,UTILS::getAsset("textures/marble.jpg"));
-        floorTexture = new Texture(GL_TEXTURE_2D,UTILS::getAsset("textures/metal.png"));
+        cubeTexture = new GLTexture(GL_TEXTURE_2D,UTILS::getAsset("textures/marble.jpg"));
+        floorTexture = new GLTexture(GL_TEXTURE_2D,UTILS::getAsset("textures/metal.png"));
     }
 
 
@@ -151,6 +152,11 @@ private:
             -5.0f, -0.5f, -5.0f,  0.0f, 2.0f,
             5.0f, -0.5f, -5.0f,  2.0f, 2.0f								
         };
+
+        auto VBO = GLVertexBuffer::builder().Attribute(AttributeType::POSITION, 0, AttributeElementType::FLOAT3, 0, 5 * sizeof(float))
+                                            .Attribute(AttributeType::TexCoord, 1, AttributeElementType::FLOAT2, 3 * sizeof(float), 5 * sizeof(float))
+                                            .build(&MODEL::CubePosTexVertices,sizeof(MODEL::CubePosTexVertices));
+        auto VAO = GLVertexArray::builder().VBO(VBO).build();
         // cube VAO
         glGenVertexArrays(1, &cubeVAO);
         glGenBuffers(1, &cubeVBO);
@@ -176,9 +182,10 @@ private:
     }
 
     unsigned int cubeVAO, cubeVBO, planeVAO, planeVBO;
-    Technique   *shader = nullptr;
+    GLTechnique *shader = nullptr;
     Camera      *camera = nullptr;
-    Texture     *cubeTexture = nullptr, *floorTexture = nullptr;
+    GLTexture   *cubeTexture = nullptr, *floorTexture = nullptr;
+    GLVertexArray* VAO = nullptr;
 
     float frameTime;
 

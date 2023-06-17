@@ -1,1 +1,1 @@
-static const char * logl_root = "C:/Workspace/myGithub/myOpenGLSamples";
+static const char * logl_root = "D:/WorkSpace/MyGithub/myOpenGLSamples";

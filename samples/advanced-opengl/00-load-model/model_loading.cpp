@@ -2,7 +2,7 @@
 #include <GLFW/glfw3.h>
 
 #include "base/app.h"
-#include "base/technique.h"
+#include "base/gltechnique.h"
 #include "base/camera.h"
 #include "base/model.h"
 
@@ -119,7 +119,7 @@ public:
 private:
 
     void CreateShader(){
-        shader =  new Technique("shaders/1.model_loading.vs","shaders/1.model_loading.fs");
+        shader =  new GLTechnique("shaders/1.model_loading.vs","shaders/1.model_loading.fs");
     }
 
     void CreateCamera(){
@@ -130,7 +130,7 @@ private:
         modelObj = new Model(UTILS::getAsset("models/backpack/backpack.obj"));
     }
 
-    Technique   *shader = nullptr;
+    GLTechnique *shader = nullptr;
     Camera      *camera = nullptr;
     Model       *modelObj = nullptr;
     float        frameTime;

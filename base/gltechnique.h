@@ -11,13 +11,13 @@
 /**
  * Technique represents the shader program 
 */
-class Technique
+class GLTechnique
 {
 public:
 
-    Technique(const char* pVertexPath,const char* pFragmentPath);
+    GLTechnique(const char* pVertexPath,const char* pFragmentPath);
 
-    virtual ~Technique();
+    virtual ~GLTechnique();
 
     // Use the program
     void Enable();
