@@ -29,10 +29,10 @@ struct Vertex {
 class Mesh {
 public:
     // mesh Data
-    vector<Vertex>       vertices;
-    vector<unsigned int> indices;
+    vector<Vertex>        vertices;
+    vector<unsigned int>  indices;
     vector<Texture*>      textures;
-    unsigned int         VAO, VBO, EBO;
+    unsigned int          VAO, VBO, EBO;
 
     // constructor
     Mesh(const vector<Vertex>& vertices, const vector<unsigned int>& indices, const vector<Texture*>& textures)
