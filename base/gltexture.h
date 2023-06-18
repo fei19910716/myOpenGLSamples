@@ -7,10 +7,10 @@
 
 enum TextureType{
     General,
-    Diffuse,
-    Speculer,
-    Height,
-    Normal
+    DiffuseMap,
+    SpeculerMap,
+    HeightMap,
+    NormalMap
 };
 
 class GLTexture

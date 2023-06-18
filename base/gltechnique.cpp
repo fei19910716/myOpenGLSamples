@@ -133,7 +133,7 @@ bool GLTechnique::Link()
 }
 
 
-void GLTechnique::Enable()
+void GLTechnique::Enable() const
 {
     if(!Valid()){
         DEV_ERROR("program is invalid.");

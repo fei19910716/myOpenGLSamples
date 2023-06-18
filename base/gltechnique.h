@@ -20,7 +20,7 @@ public:
     virtual ~GLTechnique();
 
     // Use the program
-    void Enable();
+    void Enable() const;
 
     bool SetUniformFloat(const char* pUniformName,const float& value) const;
     bool SetUniformVec3(const char* pUniformName,const glm::vec3& value) const;

@@ -15,89 +15,94 @@ enum AttributeType : uchar {
     Bitangent
 };
 
-enum class AttributeElementType : uchar {
-    BYTE,
-    BYTE2,
-    BYTE3,
-    BYTE4,
-    UBYTE,
-    UBYTE2,
-    UBYTE3,
-    UBYTE4,
-    SHORT,
-    SHORT2,
-    SHORT3,
-    SHORT4,
-    USHORT,
-    USHORT2,
-    USHORT3,
-    USHORT4,
-    INT,
-    UINT,
-    FLOAT,
-    FLOAT2,
-    FLOAT3,
-    FLOAT4,
-    HALF,
-    HALF2,
-    HALF3,
-    HALF4,
+enum class AttributeDataType {
+    GLBYTE = 0x1400,
+    GLUNSIGNED_BYTE = 0x1401,
+    GLSHORT = 0x1402,
+    GLUNSIGNED_SHORT = 0x1403,
+    GLINT = 0x1404,
+    GLUNSIGNED_INT = 0x1405,
+    GLFLOAT = 0x1406
 };
 
+class GLVertexArray;
 
-
-struct Attribute {
+struct VertexAttribute {
     bool BUFFER_USED = false;
     bool normalized  = false;
-    uint8_t  count   =0;
-    uint32_t offset = 0;
-    uint8_t stride = 0;
-    uint8_t buffer = -1;
-    AttributeElementType type = AttributeElementType::BYTE;
+    uint8_t  count   = 0;
+    uint8_t  offset  = 0;
+    uint8_t  stride  = 0;
+    uint8_t  bufferIndex = 0;
+    AttributeDataType dataType = AttributeDataType::GLBYTE;
 };
 
 class GLVertexBuffer{
 public:
-    Attribute mAttributes[MAX_VERTEX_ATTRIBUTE_COUNT];
 
     static GLVertexBuffer& builder() noexcept{
         GLVertexBuffer* buffer = new GLVertexBuffer;
         return *buffer;
     }
 
-    GLVertexBuffer& Attribute(AttributeType attribute, uint8_t bufferIndex,
-                AttributeElementType attributeType,
-                uint32_t byteOffset = 0, uint8_t byteStride = 0) noexcept
-    {
-        Attribute& entry = mAttributes[attribute];
-        entry.buffer = bufferIndex;
-        entry.offset = byteOffset;
-        entry.stride = byteStride;
-        entry.type = attributeType;
-        entry.BUFFER_USED = true;
+    ~GLVertexBuffer(){
+        glDeleteBuffers(1,&m_ID);
     }
 
-    GLVertexBuffer* build(void const* buffer, size_t size)
+    GLVertexBuffer& Attribute(AttributeType attribute, uint8_t bufferIndex, uint8_t count,
+                AttributeDataType dataType, bool normalized, uint8_t byteStride = 0, uint8_t byteOffset = 0) noexcept
     {
-        glGenBuffers(1, &VBO);
-
-        glBindBuffer(GL_ARRAY_BUFFER, VBO);
-        glBufferData(GL_ARRAY_BUFFER, size, buffer, GL_STATIC_DRAW);
+        VertexAttribute& entry = mAttributes[attribute];
+        entry.bufferIndex = bufferIndex;
+        entry.count = count;
+        entry.dataType = dataType;
+        entry.normalized = normalized;
+        entry.stride = byteStride;
+        entry.offset = byteOffset;
         
-        for (size_t j = 0; j < MAX_VERTEX_ATTRIBUTE_COUNT; ++j) {
-            Attribute& entry = mAttributes[j];
-            if (entry.BUFFER_USED) {
-                glEnableVertexAttribArray(j);
-                glVertexAttribPointer(j, entry.count, entry.type, entry.normalized, entry.stride, entry.offset);
-            }
-        }
+        entry.BUFFER_USED = true;
+
+        return *this;
+    }
+
+    GLVertexBuffer& VertexCount(size_t count = 0) noexcept
+    {
+        m_vertexCount = count;
+
+        return *this;
+    }
+
+    GLVertexBuffer& Buffer(void const* buffer) noexcept
+    {
+        m_buffer = buffer;
+
+        return *this;
+    }
+
+    GLVertexBuffer& Size(size_t size) noexcept
+    {
+        m_size = size;
+
+        return *this;
+    }
+
+    GLVertexBuffer* build()
+    {
+        glGenBuffers(1, &m_ID);
+
+        return this;
     }
 
     unsigned int GetID() const{
-        return VBO;
+        return m_ID;
     }
 
 private:
+    void const*     m_buffer;
+    size_t          m_size;
+    size_t          m_vertexCount;
+    unsigned int    m_ID;
 
-    unsigned int VBO;
-}
+    VertexAttribute mAttributes[MAX_VERTEX_ATTRIBUTE_COUNT];
+    friend GLVertexArray;
+};

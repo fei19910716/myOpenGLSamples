@@ -1,54 +1,79 @@
 #pragma once
+
 #include "base/types.h"
 #include "base/utils.h"
 
-enum IndexElementType : uint8_t {
-    USHORT,
-    UINT
+#include <glad/glad.h>
+
+#define MAX_VERTEX_ATTRIBUTE_COUNT 16
+
+enum IndexDataType{
+    GLSHORT = 0x1402,
+    GLUNSIGNED_SHORT = 0x1403,
+    GLINT = 0x1404,
+    GLUNSIGNED_INT = 0x1405
 };
 
+class GLVertexArray;
 class GLIndexBuffer{
 public:
-
-    GLIndexBuffer() = default;
-
     static GLIndexBuffer& builder() noexcept{
         GLIndexBuffer* buffer = new GLIndexBuffer;
         return *buffer;
     }
 
-    GLIndexBuffer& IndexCount(uint8_t count = 0) noexcept
+    ~GLIndexBuffer(){
+        glDeleteBuffers(1,&m_ID);
+    }
+
+    GLIndexBuffer& IndexCount(size_t count = 0) noexcept
     {
-        indexCount = count;
+        m_indexCount = count;
 
         return *this;
     }
 
-    GLIndexBuffer& ElementType(IndexElementType type = IndexElementType::USHORT) noexcept
+    GLIndexBuffer& ElementType(IndexDataType type = IndexDataType::GLUNSIGNED_SHORT) noexcept
     {
-        elementType = type;
+        m_elementType = type;
 
         return *this;
     }
 
-    GLIndexBuffer* build(void const* buffer, size_t size)
+    GLIndexBuffer& Buffer(void const* buffer) noexcept
     {
-        glGenBuffers(1, &EBO);
+        m_buffer = buffer;
 
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-        glBufferData(GL_ELEMENT_ARRAY_BUFFER, size, buffer, GL_STATIC_DRAW);
+        return *this;
+    }
+
+    GLIndexBuffer& Size(size_t size) noexcept
+    {
+        m_size = size;
+
+        return *this;
+    }
+
+
+    GLIndexBuffer* build()
+    {
+        glGenBuffers(1, &m_ID);
 
         return this;
     }
 
     unsigned int GetID() const{
-        return EBO;
+        return m_ID;
     }
 
 private:
+    GLIndexBuffer() = default;
 
-    unsigned int EBO;
+    unsigned int    m_ID;
+    void const*     m_buffer;
+    size_t          m_size;
+    size_t          m_indexCount = 0;
+    IndexDataType   m_elementType = IndexDataType::GLUNSIGNED_SHORT;
 
-    uint8_t indexCount = 0;
-    IndexElementType elementType = IndexElementType::USHORT;
+    friend GLVertexArray;
 };
