@@ -15,9 +15,8 @@
 #include <vector>
 using namespace std;
 
-namespace MODEL{
 
-class Model 
+class GLModel 
 {
 public:
     // model data 
@@ -27,9 +26,9 @@ public:
     bool gammaCorrection;
 
     // constructor, expects a filepath to a 3D model.
-    Model(string const &path, bool gamma = false);
+    GLModel(string const &path, bool gamma = false);
 
-    ~Model();
+    ~GLModel();
 
     // draws the model, and thus all its meshes
     void Draw(const GLTechnique* shader);
@@ -48,4 +47,3 @@ private:
     void LoadMaterialTextures(aiMaterial *mat, aiTextureType type, TextureType devType);
 };
 
-}

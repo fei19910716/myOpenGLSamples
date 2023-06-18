@@ -4,7 +4,7 @@
 #include "base/app.h"
 #include "base/gltechnique.h"
 #include "base/camera.h"
-#include "base/model.h"
+#include "base/glmodel.h"
 
 // settings
 const unsigned int SCR_WIDTH = 800;
@@ -15,7 +15,6 @@ float lastX = SCR_WIDTH / 2.0f;
 float lastY = SCR_HEIGHT / 2.0f;
 bool firstMouse = true;
 
-using namespace MODEL;
 using namespace UTILS;
 
 class SampleApp: public App, public ICallbacks{
@@ -127,12 +126,12 @@ private:
     }
 
     void CreateModel(){
-        modelObj = new Model(UTILS::getAsset("models/backpack/backpack.obj"));
+        modelObj = new GLModel(UTILS::getAsset("models/backpack/backpack.obj"));
     }
 
     GLTechnique *shader = nullptr;
     Camera      *camera = nullptr;
-    Model       *modelObj = nullptr;
+    GLModel     *modelObj = nullptr;
     float        frameTime;
 
 };

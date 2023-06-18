@@ -1,14 +1,14 @@
-#include "model.h"
+#include "glmodel.h"
 
-namespace MODEL{
+
 // constructor, expects a filepath to a 3D model.
-Model::Model(string const &path, bool gamma) : 
+GLModel::GLModel(string const &path, bool gamma) : 
 gammaCorrection(gamma)
 {
     LoadModel(path);
 }
 
-Model::~Model(){
+GLModel::~GLModel(){
     for(auto item: meshes){
         delete item;
     }
@@ -19,7 +19,7 @@ Model::~Model(){
 }
 
 // draws the model, and thus all its meshes
-void Model::Draw(const GLTechnique* shader)
+void GLModel::Draw(const GLTechnique* shader)
 {   
     unsigned int diffuseNr  = 1;
     unsigned int specularNr = 1;
@@ -63,7 +63,7 @@ void Model::Draw(const GLTechnique* shader)
 }
 
 // loads a model with supported ASSIMP extensions from file and stores the resulting meshes in the meshes vector.
-void Model::LoadModel(string const &path)
+void GLModel::LoadModel(string const &path)
 {
     // read file via ASSIMP
     Assimp::Importer importer;
@@ -82,7 +82,7 @@ void Model::LoadModel(string const &path)
 }
 
 // processes a node in a recursive fashion. Processes each individual mesh located at the node and repeats this process on its children nodes (if any).
-void Model::ProcessNode(aiNode *node, const aiScene *scene)
+void GLModel::ProcessNode(aiNode *node, const aiScene *scene)
 {
     // process each mesh located at the current node
     for(unsigned int i = 0; i < node->mNumMeshes; i++)
@@ -100,7 +100,7 @@ void Model::ProcessNode(aiNode *node, const aiScene *scene)
 
 }
 
-GLMesh* Model::ProcessMesh(aiMesh *mesh, const aiScene *scene)
+GLMesh* GLModel::ProcessMesh(aiMesh *mesh, const aiScene *scene)
 {
     // data to fill
     vector<GLVertex> vertices;
@@ -181,7 +181,7 @@ GLMesh* Model::ProcessMesh(aiMesh *mesh, const aiScene *scene)
 
 // checks all material textures of a given type and loads the textures if they're not loaded yet.
 // the required info is returned as a Texture struct.
-void Model::LoadMaterialTextures(aiMaterial *mat, aiTextureType aiType, TextureType devType)
+void GLModel::LoadMaterialTextures(aiMaterial *mat, aiTextureType aiType, TextureType devType)
 {
     for(unsigned int i = 0; i < mat->GetTextureCount(aiType); i++)
     {
@@ -205,6 +205,4 @@ void Model::LoadMaterialTextures(aiMaterial *mat, aiTextureType aiType, TextureT
             textures_loaded.push_back(texture);  // store it as texture loaded for entire model, to ensure we won't unnecessary load duplicate textures.
         }
     }
-}
-
 }
