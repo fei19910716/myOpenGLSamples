@@ -43,7 +43,6 @@ bool UTILS::ReadFile(const char* pFileName, std::string& outFile)
     return ret;
 }
 
-
 void UTILS::DevError(const char* pFileName, uint line, const char* format, ...)
 {
     char msg[1000];

@@ -39,7 +39,6 @@ public:
 
     GLVertexArray* build(){
         glGenVertexArrays(1, &m_ID);
-
         glBindVertexArray(m_ID);
         if(m_VBO) {
             glBindBuffer(GL_ARRAY_BUFFER, m_VBO->GetID());
@@ -48,7 +47,7 @@ public:
             for (GLuint j = 0; j < MAX_VERTEX_ATTRIBUTE_COUNT; ++j) {
                 VertexAttribute& entry = m_VBO->mAttributes[j];
                 if (entry.BUFFER_USED) {
-                    glEnableVertexAttribArray(j);
+                    glEnableVertexAttribArray(entry.bufferIndex);
                     glVertexAttribPointer(entry.bufferIndex, entry.count, (GLenum)entry.dataType, entry.normalized, entry.stride, (void*)(entry.offset));
                 }
             }
@@ -60,7 +59,6 @@ public:
 
 
         glBindVertexArray(0);
-
         return this;
     }
 
@@ -83,7 +81,7 @@ public:
         return m_VBO->m_vertexCount;
     }
 
-private:
+public:
     unsigned int    m_ID;
     GLVertexBuffer* m_VBO = nullptr;
     GLIndexBuffer*  m_EBO = nullptr;

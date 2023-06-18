@@ -20,7 +20,44 @@ Model::~Model(){
 
 // draws the model, and thus all its meshes
 void Model::Draw(const GLTechnique* shader)
-{
+{   
+    unsigned int diffuseNr  = 1;
+    unsigned int specularNr = 1;
+    unsigned int normalNr   = 1;
+    unsigned int heightNr   = 1;
+    for(unsigned int i = 0; i < textures_loaded.size(); i++)
+    {
+        // retrieve texture number (the N in diffuse_textureN)
+        std::string samplerName;
+        TextureType type = textures_loaded[i]->GetTextureType();
+        switch (type)
+        {
+        case TextureType::DiffuseMap:
+            samplerName = "texture_diffuse" + std::to_string(diffuseNr++);
+            break;
+        case TextureType::SpeculerMap:
+            samplerName = "texture_specular" + std::to_string(diffuseNr++);
+            break;
+        case TextureType::HeightMap:
+            samplerName = "texture_height" + std::to_string(diffuseNr++);
+            break;
+        case TextureType::NormalMap:
+            samplerName = "texture_normal" + std::to_string(diffuseNr++);
+            break;
+        
+        default:
+            break;
+        }
+
+        if(textures_loaded[i]->Bind(GL_TEXTURE0 + i) == false){
+            DEV_ERROR("Bind texture fail!");
+        }
+        
+        if(shader->SetSamplerUnit(samplerName.c_str(), i) == false){
+            //DEV_ERROR("Uniform location invalid '%s'\n", samplerName.c_str());
+        }
+
+    }
     for(unsigned int i = 0; i < meshes.size(); i++)
         meshes[i]->Draw(shader);
 }
@@ -63,17 +100,16 @@ void Model::ProcessNode(aiNode *node, const aiScene *scene)
 
 }
 
-Mesh* Model::ProcessMesh(aiMesh *mesh, const aiScene *scene)
+GLMesh* Model::ProcessMesh(aiMesh *mesh, const aiScene *scene)
 {
     // data to fill
-    vector<Vertex> vertices;
+    vector<GLVertex> vertices;
     vector<unsigned int> indices;
-    vector<GLTexture*> textures;
 
     // walk through each of the mesh's vertices
     for(unsigned int i = 0; i < mesh->mNumVertices; i++)
     {
-        Vertex vertex;
+        GLVertex vertex;
         glm::vec3 vector; // we declare a placeholder vector since assimp uses its own vector class that doesn't directly convert to glm's vec3 class so we transfer the data to this placeholder glm::vec3 first.
         // positions
         vector.x = mesh->mVertices[i].x;
@@ -131,27 +167,22 @@ Mesh* Model::ProcessMesh(aiMesh *mesh, const aiScene *scene)
     // normal: texture_normalN
 
     // 1. diffuse maps
-    vector<GLTexture*> diffuseMaps = LoadMaterialTextures(material, aiTextureType_DIFFUSE, TextureType::Diffuse);
-    textures.insert(textures.end(), diffuseMaps.begin(), diffuseMaps.end());
+    LoadMaterialTextures(material, aiTextureType_DIFFUSE, TextureType::DiffuseMap);
     // 2. specular maps
-    vector<GLTexture*> specularMaps = LoadMaterialTextures(material, aiTextureType_SPECULAR, TextureType::Speculer);
-    textures.insert(textures.end(), specularMaps.begin(), specularMaps.end());
+    LoadMaterialTextures(material, aiTextureType_SPECULAR, TextureType::SpeculerMap);
     // 3. normal maps
-    vector<GLTexture*> normalMaps = LoadMaterialTextures(material, aiTextureType_NORMALS, TextureType::Normal);
-    textures.insert(textures.end(), normalMaps.begin(), normalMaps.end());
+    LoadMaterialTextures(material, aiTextureType_NORMALS, TextureType::NormalMap);
     // 4. height maps
-    vector<GLTexture*> heightMaps = LoadMaterialTextures(material, aiTextureType_HEIGHT, TextureType::Height);
-    textures.insert(textures.end(), heightMaps.begin(), heightMaps.end());
+    LoadMaterialTextures(material, aiTextureType_HEIGHT, TextureType::HeightMap);
     
     // return a mesh object created from the extracted mesh data
-    return new Mesh(vertices, indices, textures);
+    return new GLMesh(vertices, indices);
 }
 
 // checks all material textures of a given type and loads the textures if they're not loaded yet.
 // the required info is returned as a Texture struct.
-vector<GLTexture*> Model::LoadMaterialTextures(aiMaterial *mat, aiTextureType aiType, TextureType devType)
+void Model::LoadMaterialTextures(aiMaterial *mat, aiTextureType aiType, TextureType devType)
 {
-    vector<GLTexture*> textures;
     for(unsigned int i = 0; i < mat->GetTextureCount(aiType); i++)
     {
         aiString str;
@@ -163,7 +194,6 @@ vector<GLTexture*> Model::LoadMaterialTextures(aiMaterial *mat, aiTextureType ai
         {
             if(textures_loaded[j]->GetFilePath().compare(path) ==0)
             {
-                textures.push_back(textures_loaded[j]);
                 skip = true; // a texture with the same filepath has already been loaded, continue to next one. (optimization)
                 break;
             }
@@ -172,12 +202,9 @@ vector<GLTexture*> Model::LoadMaterialTextures(aiMaterial *mat, aiTextureType ai
         {   
             // if texture hasn't been loaded already, load it
             GLTexture* texture = new GLTexture(GL_TEXTURE_2D, path.c_str(), devType);
-            textures.push_back(texture);
             textures_loaded.push_back(texture);  // store it as texture loaded for entire model, to ensure we won't unnecessary load duplicate textures.
         }
     }
-
-    return textures;
 }
 
 }

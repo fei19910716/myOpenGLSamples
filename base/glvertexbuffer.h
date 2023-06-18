@@ -89,7 +89,6 @@ public:
     GLVertexBuffer* build()
     {
         glGenBuffers(1, &m_ID);
-
         return this;
     }
 

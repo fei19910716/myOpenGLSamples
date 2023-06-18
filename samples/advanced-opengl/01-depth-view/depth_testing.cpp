@@ -53,11 +53,9 @@ public:
         shader->SetUniformMat4("model", model);
         cubeMesh->Draw(shader);
         // floor
-        glBindVertexArray(planeVAO);
         floorTexture->Bind(GL_TEXTURE0);
         shader->SetUniformMat4("model", glm::mat4(1.0f));
-        glDrawArrays(GL_TRIANGLES, 0, 6);
-        glBindVertexArray(0);
+        planeMesh->Draw(shader);
 
         BackendSwapBuffers();
     }
@@ -144,15 +142,13 @@ private:
         
 
         // cube VAO
-        GLVertexBuffer* cubeVBO = GLVertexBuffer::builder().Attribute(AttributeType::POSITION, 0, 3, AttributeDataType::GLFLOAT, false, 5 * sizeof(float), 0)
-                                           .Attribute(AttributeType::TexCoord, 1, 2, AttributeDataType::GLFLOAT, false, 5 * sizeof(float), 3 * sizeof(float))
-                                           .Buffer(&MODEL::CubePosTexVertices)
-                                           .Size(sizeof(MODEL::CubePosTexVertices))
-                                           .VertexCount(36)
-                                           .build();
-        GLVertexArray* cubeVAO = GLVertexArray::builder().VBO(cubeVBO).build();
-        
-        cubeMesh = new GLMesh(cubeVAO);
+        auto cubeVBO = GLVertexBuffer::builder().Attribute(AttributeType::POSITION, 0, 3, AttributeDataType::GLFLOAT, false, 5 * sizeof(float), 0)
+                                                .Attribute(AttributeType::TexCoord, 1, 2, AttributeDataType::GLFLOAT, false, 5 * sizeof(float), 3 * sizeof(float))
+                                                .Buffer(&MODEL::CubePosTexVertices)
+                                                .Size(sizeof(MODEL::CubePosTexVertices))
+                                                .VertexCount(36)
+                                                .build();
+        cubeMesh = new GLMesh(GLVertexArray::builder().VBO(cubeVBO).build());
 
         // plane VAO
         float planeVertices[] = {
@@ -165,20 +161,17 @@ private:
             -5.0f, -0.5f, -5.0f,  0.0f, 2.0f,
             5.0f, -0.5f, -5.0f,  2.0f, 2.0f								
         };
-        glGenVertexArrays(1, &planeVAO);
-        glGenBuffers(1, &planeVBO);
-        glBindVertexArray(planeVAO);
-        glBindBuffer(GL_ARRAY_BUFFER, planeVBO);
-        glBufferData(GL_ARRAY_BUFFER, sizeof(planeVertices), &planeVertices, GL_STATIC_DRAW);
-        glEnableVertexAttribArray(0);
-        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
-        glEnableVertexAttribArray(1);
-        glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
-        glBindVertexArray(0);
+
+        auto planeVBO = GLVertexBuffer::builder().Attribute(AttributeType::POSITION, 0, 3, AttributeDataType::GLFLOAT, false, 5 * sizeof(float), 0)
+                                                 .Attribute(AttributeType::TexCoord, 1, 2, AttributeDataType::GLFLOAT, false, 5 * sizeof(float), 3 * sizeof(float))
+                                                 .Buffer(&planeVertices)
+                                                 .Size(sizeof(planeVertices))
+                                                 .VertexCount(6)
+                                                 .build();
+        planeMesh = new GLMesh(GLVertexArray::builder().VBO(planeVBO).build());
     }
 
-    unsigned int planeVAO, planeVBO;
-    GLMesh      *cubeMesh = nullptr;
+    GLMesh      *cubeMesh = nullptr, *planeMesh = nullptr;
     GLTechnique *shader = nullptr;
     Camera      *camera = nullptr;
     GLTexture   *cubeTexture = nullptr, *floorTexture = nullptr;
