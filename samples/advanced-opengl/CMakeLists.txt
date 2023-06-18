@@ -12,5 +12,6 @@ if(BUILD_ALL_SAMPLES)
 else()
     add_subdirectory(00-load-model)
     add_subdirectory(01-depth-view)
+    add_subdirectory(02-stencil-test)
 endif()
 

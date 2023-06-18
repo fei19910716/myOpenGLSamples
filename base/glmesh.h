@@ -6,6 +6,7 @@
 #include "base/gltechnique.h"
 #include "base/utils.h"
 #include "base/glvertexarray.h"
+#include "base/vertices.h"
 
 #include <vector>
 
