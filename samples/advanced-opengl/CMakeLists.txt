@@ -14,6 +14,6 @@ else()
     add_subdirectory(01-depth-view)
     add_subdirectory(02-stencil-test)
     add_subdirectory(03-alpha-test)
-    add_subdirectory(04-blend)
+    add_subdirectory(04-blending)
 endif()
 
