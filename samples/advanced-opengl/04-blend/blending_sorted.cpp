@@ -7,6 +7,8 @@
 #include "base/camera.h"
 #include "base/glmesh.h"
 
+#include <map>
+
 // settings
 const unsigned int SCR_WIDTH = 800;
 const unsigned int SCR_HEIGHT = 600;
@@ -16,6 +18,7 @@ float lastX = (float)SCR_WIDTH / 2.0;
 float lastY = (float)SCR_HEIGHT / 2.0;
 bool firstMouse = true;
 
+
 class SampleApp: public App, public ICallbacks{
 
 public:
@@ -24,80 +27,65 @@ public:
     {
         frameTime = GetFrameTime();
 
-        // render
-        glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT); // don't forget to clear the stencil buffer!
-
         // configure global opengl state
+        // -----------------------------
         glEnable(GL_DEPTH_TEST);
-        glDepthFunc(GL_LESS);
-        glEnable(GL_STENCIL_TEST);
-        glStencilFunc(GL_NOTEQUAL/*func*/, 1/*ref*/, 0xFF/*mask*/); // ref && mask != value && mask时通过测试
-        glStencilOp(GL_KEEP/*sfail*/, GL_KEEP/*spass,dfail*/, GL_REPLACE/*spass,dpass*/); // 默认为(GL_KEEP, GL_KEEP, GL_KEEP)
+        glEnable(GL_BLEND);
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-        // set uniforms
-        shaderSingleColor->Enable();
-        glm::mat4 model = glm::mat4(1.0f);
-        glm::mat4 view = camera->GetViewMatrix();
-        glm::mat4 projection = glm::perspective(glm::radians(camera->FOV), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
-        shaderSingleColor->SetUniformMat4("view", view);
-        shaderSingleColor->SetUniformMat4("projection", projection);
+        // render
+        // ------
+        glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+        // draw objects
         shader->Enable();
-        shader->SetUniformMat4("view", view);
+        glm::mat4 projection = glm::perspective(glm::radians(camera->FOV), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
+        glm::mat4 view = camera->GetViewMatrix();
+        glm::mat4 model = glm::mat4(1.0f);
         shader->SetUniformMat4("projection", projection);
+        shader->SetUniformMat4("view", view);
+        // cubes
+        cubeTexture->Bind(GL_TEXTURE0);
+        model = glm::translate(model, glm::vec3(-1.0f, 0.0f, -1.0f));
+        shader->SetUniformMat4("model", model);
+        cubeMesh->Draw(shader);
 
-        // draw floor as normal, but don't write the floor to the stencil buffer, we only care about the containers. 
-        // We set its mask to 0x00 to not write to the stencil buffer.
-        glStencilMask(0x00); // 与将要写入缓冲的模板值进行与(AND)运算,与glDepthMask(GL_FALSE)等价
+        model = glm::mat4(1.0f);
+        model = glm::translate(model, glm::vec3(2.0f, 0.0f, 0.0f));
+        shader->SetUniformMat4("model", model);
+        cubeMesh->Draw(shader);
         // floor
         floorTexture->Bind(GL_TEXTURE0);
-        shader->SetUniformMat4("model", glm::mat4(1.0f));
+        model = glm::mat4(1.0f);
+        shader->SetUniformMat4("model", model);
         planeMesh->Draw(shader);
-
-        // 1st. render pass, draw objects as normal, writing to the stencil buffer
-        // --------------------------------------------------------------------
-        glStencilFunc(GL_ALWAYS, 1, 0xFF); // 始终spass
-        glStencilMask(0xFF); // 开启写入
-        // cubes
-        cubeTexture->Bind(GL_TEXTURE0);
-        model = glm::translate(model, glm::vec3(-1.0f, 0.0f, -1.0f));
-        shader->SetUniformMat4("model", model);
-        cubeMesh->Draw(shader);
-
-        model = glm::mat4(1.0f);
-        model = glm::translate(model, glm::vec3(2.0f, 0.0f, 0.0f));
-        shader->SetUniformMat4("model", model);
-        cubeMesh->Draw(shader);
-
-        // 2nd. render pass: now draw slightly scaled versions of the objects, this time disabling stencil writing.
-        // Because the stencil buffer is now filled with several 1s. The parts of the buffer that are 1 are not drawn, thus only drawing 
-        // the objects' size differences, making it look like borders.
-        // -----------------------------------------------------------------------------------------------------------------------------
-        glStencilFunc(GL_NOTEQUAL, 1, 0xFF);
-        glStencilMask(0x00); // 禁止写入
-        glDisable(GL_DEPTH_TEST);
+        // windows (from furthest to nearest)
+        // sort the transparent windows before rendering
+        // ---------------------------------------------
+        vector<glm::vec3> windows
+        {
+            glm::vec3(-1.5f, 0.0f, -0.48f),
+            glm::vec3( 1.5f, 0.0f, 0.51f),
+            glm::vec3( 0.0f, 0.0f, 0.7f),
+            glm::vec3(-0.3f, 0.0f, -2.3f),
+            glm::vec3( 0.5f, 0.0f, -0.6f)
+        };
+        std::map<float, glm::vec3> sorted;
+        for (unsigned int i = 0; i < windows.size(); i++)
+        {
+            float distance = glm::length(camera->Position - windows[i]);
+            sorted[distance] = windows[i];
+        }
         
-        float scale = 1.1f;
-        // cubes
-        shaderSingleColor->Enable();
-        cubeTexture->Bind(GL_TEXTURE0);
-        model = glm::mat4(1.0f);
-        model = glm::translate(model, glm::vec3(-1.0f, 0.0f, -1.0f));
-        model = glm::scale(model, glm::vec3(scale, scale, scale));
-        shaderSingleColor->SetUniformMat4("model", model);
-        cubeMesh->Draw(shaderSingleColor);
-
-        model = glm::mat4(1.0f);
-        model = glm::translate(model, glm::vec3(2.0f, 0.0f, 0.0f));
-        model = glm::scale(model, glm::vec3(scale, scale, scale));
-        shaderSingleColor->SetUniformMat4("model", model);
-        cubeMesh->Draw(shaderSingleColor);
-
-        glBindVertexArray(0);
-        glStencilMask(0xFF);
-        glStencilFunc(GL_ALWAYS, 0, 0xFF);
-        glEnable(GL_DEPTH_TEST);
+        windowTexture->Bind(GL_TEXTURE0);
+        for (std::map<float, glm::vec3>::reverse_iterator it = sorted.rbegin(); it != sorted.rend(); ++it)
+        {
+            model = glm::mat4(1.0f);
+            model = glm::translate(model, it->second);
+            shader->SetUniformMat4("model", model);
+            windowMesh->Draw(shader);
+        }
 
         BackendSwapBuffers();
     }
@@ -167,8 +155,7 @@ public:
 private:
 
     void CreateShader(){
-        shader = new GLTechnique("shaders/2.stencil_testing.vs","shaders/2.stencil_testing.fs");
-        shaderSingleColor = new GLTechnique("shaders/2.stencil_testing.vs","shaders/2.stencil_single_color.fs");
+        shader = new GLTechnique("shaders/3.2.blending.vs","shaders/3.2.blending.fs");
     }
 
     void CreateCamera(){
@@ -178,6 +165,7 @@ private:
     void CreateTextures(){
         cubeTexture = new GLTexture(GL_TEXTURE_2D,UTILS::getAsset("textures/marble.jpg"));
         floorTexture = new GLTexture(GL_TEXTURE_2D,UTILS::getAsset("textures/metal.png"));
+        windowTexture = new GLTexture(GL_TEXTURE_2D,UTILS::getAsset("textures/window.png"));
     }
 
 
@@ -212,12 +200,34 @@ private:
                                                  .VertexCount(6)
                                                  .build();
         planeMesh = new GLMesh(GLVertexArray::builder().VBO(planeVBO).build());
+
+        // grass VAO
+
+        float windowVertices[] = {
+            // positions         // texture Coords (swapped y coordinates because texture is flipped upside down)
+            0.0f,  0.5f,  0.0f,  0.0f,  0.0f,
+            0.0f, -0.5f,  0.0f,  0.0f,  1.0f,
+            1.0f, -0.5f,  0.0f,  1.0f,  1.0f,
+
+            0.0f,  0.5f,  0.0f,  0.0f,  0.0f,
+            1.0f, -0.5f,  0.0f,  1.0f,  1.0f,
+            1.0f,  0.5f,  0.0f,  1.0f,  0.0f
+        };
+
+        auto windowVBO = GLVertexBuffer::builder().Attribute(AttributeType::POSITION, 0, 3, AttributeDataType::GLFLOAT, false, 5 * sizeof(float), 0)
+                                                 .Attribute(AttributeType::TexCoord, 1, 2, AttributeDataType::GLFLOAT, false, 5 * sizeof(float), 3 * sizeof(float))
+                                                 .Buffer(&windowVertices)
+                                                 .Size(sizeof(windowVertices))
+                                                 .VertexCount(6)
+                                                 .build();
+        windowMesh = new GLMesh(GLVertexArray::builder().VBO(windowVBO).build());
+
     }
 
-    GLMesh      *cubeMesh = nullptr, *planeMesh = nullptr;
-    GLTechnique *shader = nullptr, *shaderSingleColor = nullptr;
+    GLMesh      *cubeMesh = nullptr, *planeMesh = nullptr, *windowMesh = nullptr;
+    GLTechnique *shader = nullptr;
     Camera      *camera = nullptr;
-    GLTexture   *cubeTexture = nullptr, *floorTexture = nullptr;
+    GLTexture   *cubeTexture = nullptr, *floorTexture = nullptr, *windowTexture = nullptr;
 
     float frameTime;
 
@@ -234,3 +244,4 @@ int main(int argc, char** argv)
 
     return 0;
 }
+

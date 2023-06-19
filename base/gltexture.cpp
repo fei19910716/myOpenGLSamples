@@ -9,11 +9,11 @@
 #include "stb/stb_image.h"
 #include "stb/stb_image_write.h"
 
-GLTexture::GLTexture(GLenum TextureTarget, const std::string& FileName, TextureType type)
+GLTexture::GLTexture(GLenum TextureTarget, const std::string& FileName, TextureType type):
+m_textureTarget(TextureTarget),
+m_filePath(FileName),
+m_textureType(type)
 {
-    m_textureTarget = TextureTarget;
-    m_filePath      = FileName;
-    m_textureType   = type;
 
     if(FileName.empty()){
         DEV_ERROR("FileName is empty");
