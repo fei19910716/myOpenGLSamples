@@ -3,7 +3,7 @@
 #include "base/glvertexbuffer.h"
 #include "base/glindexbuffer.h"
 
-class GLVertexArray{
+class GLVertexArray: public GLObject{
 public:
     GLVertexArray() = default;
     ~GLVertexArray(){
@@ -82,7 +82,6 @@ public:
     }
 
 public:
-    unsigned int    m_ID;
     GLVertexBuffer* m_VBO = nullptr;
     GLIndexBuffer*  m_EBO = nullptr;
 };

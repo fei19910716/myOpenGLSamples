@@ -3,7 +3,7 @@
 
 #include <string>
 
-#include <glad/glad.h>
+#include "base/globject.h"
 
 enum TextureType{
     General,
@@ -13,9 +13,10 @@ enum TextureType{
     NormalMap
 };
 
-class GLTexture
+class GLTexture: public GLObject
 {
 public:
+    GLTexture() = default;
     GLTexture(GLenum TextureTarget, const std::string& FileName, TextureType type = TextureType::General);
 
     ~GLTexture();
@@ -35,7 +36,6 @@ public:
         ImageHeight = m_imageHeight;
     }
 
-    inline GLuint      GetTextureID()   const { return m_ID; }
     inline TextureType GetTextureType() const { return m_textureType; }
     inline std::string GetFilePath()    const { return m_filePath; }
 
@@ -45,7 +45,7 @@ private:
     std::string m_filePath;
     TextureType m_textureType;
     GLenum m_textureTarget;
-    GLuint m_ID;
+
     int m_imageWidth = 0;
     int m_imageHeight = 0;
     int m_imageBPP = 0;

@@ -15,5 +15,6 @@ else()
     add_subdirectory(02-stencil-test)
     add_subdirectory(03-alpha-test)
     add_subdirectory(04-blending)
+    add_subdirectory(05-fbo)
 endif()
 

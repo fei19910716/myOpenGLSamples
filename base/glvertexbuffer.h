@@ -2,7 +2,7 @@
 #include "base/types.h"
 #include "base/utils.h"
 
-#include <glad/glad.h>
+#include "base/globject.h"
 
 #define MAX_VERTEX_ATTRIBUTE_COUNT 16
 
@@ -37,7 +37,7 @@ struct VertexAttribute {
     AttributeDataType dataType = AttributeDataType::GLBYTE;
 };
 
-class GLVertexBuffer{
+class GLVertexBuffer: public GLObject{
 public:
 
     static GLVertexBuffer& builder() noexcept{
@@ -92,15 +92,10 @@ public:
         return this;
     }
 
-    unsigned int GetID() const{
-        return m_ID;
-    }
-
 private:
     void const*     m_buffer;
     size_t          m_size;
     size_t          m_vertexCount;
-    unsigned int    m_ID;
 
     VertexAttribute mAttributes[MAX_VERTEX_ATTRIBUTE_COUNT];
     friend GLVertexArray;

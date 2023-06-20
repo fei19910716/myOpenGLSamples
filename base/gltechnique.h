@@ -7,11 +7,12 @@
 
 #include "base/utils.h"
 #include "base/math.h"
+#include "base/globject.h"
 
 /**
  * Technique represents the shader program 
 */
-class GLTechnique
+class GLTechnique: public GLObject
 {
 public:
 
@@ -27,8 +28,8 @@ public:
     bool SetUniformMat4(const char* pUniformName,const glm::mat4& value) const;
     bool SetSamplerUnit(const char* pUniformName,const unsigned int value) const;
 
-    bool Valid() const { return m_shaderProgram != 0 && m_shaderProgram != INVALID_OGL_VALUE; }
-    GLuint GetProgram() const { return m_shaderProgram; }
+    bool Valid() const { return m_ID != 0 && m_ID != INVALID_OGL_VALUE; }
+
 protected:
 
     bool AddShader(GLenum ShaderType, const char* pFilename);
@@ -38,7 +39,6 @@ protected:
 
     GLint GetUniformLocation(const char* pUniformName) const;
 
-    GLuint m_shaderProgram = INVALID_OGL_VALUE;
 
 private:
 

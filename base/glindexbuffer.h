@@ -3,7 +3,7 @@
 #include "base/types.h"
 #include "base/utils.h"
 
-#include <glad/glad.h>
+#include "base/globject.h"
 
 #define MAX_VERTEX_ATTRIBUTE_COUNT 16
 
@@ -15,7 +15,7 @@ enum IndexDataType{
 };
 
 class GLVertexArray;
-class GLIndexBuffer{
+class GLIndexBuffer: public GLObject{
 public:
     static GLIndexBuffer& builder() noexcept{
         GLIndexBuffer* buffer = new GLIndexBuffer;
@@ -62,14 +62,9 @@ public:
         return this;
     }
 
-    unsigned int GetID() const{
-        return m_ID;
-    }
-
 private:
     GLIndexBuffer() = default;
 
-    unsigned int    m_ID;
     void const*     m_buffer;
     size_t          m_size;
     size_t          m_indexCount = 0;

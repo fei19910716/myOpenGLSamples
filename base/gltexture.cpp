@@ -14,13 +14,9 @@ m_textureTarget(TextureTarget),
 m_filePath(FileName),
 m_textureType(type)
 {
-
-    if(FileName.empty()){
-        DEV_ERROR("FileName is empty");
-        return;
+    if(!FileName.empty()){
+        Load(m_filePath);
     }
-    
-    Load(m_filePath);
 }
 
 GLTexture::~GLTexture(){

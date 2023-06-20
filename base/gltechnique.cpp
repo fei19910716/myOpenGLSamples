@@ -16,9 +16,9 @@ GLTechnique::GLTechnique(const char* pVertexPath, const char* pFragmentPath)
         return;
     }
 
-    m_shaderProgram = glCreateProgram();
+    m_ID = glCreateProgram();
 
-    if (m_shaderProgram == 0) {
+    if (m_ID == 0) {
         DEV_ERROR("Error creating shader program\n");
         return;
     }
@@ -48,10 +48,10 @@ GLTechnique::~GLTechnique()
         glDeleteShader(*it);
     }
 
-    if (m_shaderProgram != 0)
+    if (m_ID != 0)
     {
-        glDeleteProgram(m_shaderProgram);
-        m_shaderProgram = 0;
+        glDeleteProgram(m_ID);
+        m_ID = 0;
     }
 }
 
@@ -92,7 +92,7 @@ bool GLTechnique::AddShader(GLenum ShaderType, const char* pFilename)
         return false;
     }
 
-    glAttachShader(m_shaderProgram, ShaderObj);
+    glAttachShader(m_ID, ShaderObj);
 
     return GLCheckError();
 }
@@ -105,19 +105,19 @@ bool GLTechnique::Link()
     GLint Success = 0;
     GLchar ErrorLog[1024] = { 0 };
 
-    glLinkProgram(m_shaderProgram);
+    glLinkProgram(m_ID);
 
-    glGetProgramiv(m_shaderProgram, GL_LINK_STATUS, &Success);
+    glGetProgramiv(m_ID, GL_LINK_STATUS, &Success);
     if (Success == 0) {
-        glGetProgramInfoLog(m_shaderProgram, sizeof(ErrorLog), NULL, ErrorLog);
+        glGetProgramInfoLog(m_ID, sizeof(ErrorLog), NULL, ErrorLog);
         DEV_ERROR("Error linking shader program: '%s'\n", ErrorLog);
         return false;
     }
 
-    glValidateProgram(m_shaderProgram);
-    glGetProgramiv(m_shaderProgram, GL_VALIDATE_STATUS, &Success);
+    glValidateProgram(m_ID);
+    glGetProgramiv(m_ID, GL_VALIDATE_STATUS, &Success);
     if (!Success) {
-        glGetProgramInfoLog(m_shaderProgram, sizeof(ErrorLog), NULL, ErrorLog);
+        glGetProgramInfoLog(m_ID, sizeof(ErrorLog), NULL, ErrorLog);
         DEV_ERROR("Invalid shader program: '%s'\n", ErrorLog);
         return false;
     }
@@ -139,7 +139,7 @@ void GLTechnique::Enable() const
         DEV_ERROR("program is invalid.");
         return;
     }
-    glUseProgram(m_shaderProgram);
+    glUseProgram(m_ID);
 }
 
 
@@ -150,7 +150,7 @@ GLint GLTechnique::GetUniformLocation(const char* pUniformName) const
         return INVALID_UNIFORM_LOCATION;
     }
 
-    return glGetUniformLocation(m_shaderProgram, pUniformName);
+    return glGetUniformLocation(m_ID, pUniformName);
 }
 
 bool GLTechnique::SetUniformFloat(const char* pUniformName,const float& value) const{
