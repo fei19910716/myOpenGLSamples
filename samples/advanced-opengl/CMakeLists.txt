@@ -16,5 +16,6 @@ else()
     add_subdirectory(03-alpha-test)
     add_subdirectory(04-blending)
     add_subdirectory(05-fbo)
+    add_subdirectory(06-skybox)
 endif()
 

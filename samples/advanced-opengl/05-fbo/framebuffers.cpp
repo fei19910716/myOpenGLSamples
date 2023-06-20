@@ -157,7 +157,7 @@ private:
         GLFrameBuffer::Bind(fbo->m_ID);
         
         auto color = new GLTexture(GL_TEXTURE_2D,std::string());
-        color->LoadRaw(SCR_WIDTH, SCR_HEIGHT,3,NULL);
+        color->LoadTexture2D(SCR_WIDTH, SCR_HEIGHT,3,NULL);
         fbo->AttachColor(color);
 
         auto rbo = new GLRenderBuffer(SCR_WIDTH, SCR_HEIGHT, GL_DEPTH24_STENCIL8);

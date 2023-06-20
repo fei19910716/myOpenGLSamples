@@ -9,14 +9,27 @@
 #include "stb/stb_image.h"
 #include "stb/stb_image_write.h"
 
-GLTexture::GLTexture(GLenum TextureTarget, const std::string& FileName, TextureType type):
+GLTexture::GLTexture(GLenum TextureTarget, const std::vector<std::string>& files, TextureType type):
 m_textureTarget(TextureTarget),
-m_filePath(FileName),
 m_textureType(type)
 {
-    if(!FileName.empty()){
-        Load(m_filePath);
+    assert(m_textureTarget == GL_TEXTURE_CUBE_MAP);
+    assert(files.size() == 6);
+
+    LoadCubemap(files);
+}
+
+GLTexture::GLTexture(GLenum TextureTarget, const std::string& file, TextureType type):
+m_textureTarget(TextureTarget),
+m_texture2DPath(file),
+m_textureType(type)
+{
+    assert(m_textureTarget == GL_TEXTURE_2D);
+
+    if(!file.empty()){
+        LoadTexture2D(file);
     }
+    
 }
 
 GLTexture::~GLTexture(){
@@ -24,7 +37,7 @@ GLTexture::~GLTexture(){
 }
 
 
-bool GLTexture::Load(u32 BufferSize, void* pData)
+bool GLTexture::LoadTexture2D(u32 BufferSize, void* pData)
 {
     void* image_data = stbi_load_from_memory((const stbi_uc*)pData, BufferSize, &m_imageWidth, &m_imageHeight, &m_imageBPP, 0);
 
@@ -38,14 +51,16 @@ bool GLTexture::Load(u32 BufferSize, void* pData)
 }
 
 
-bool GLTexture::Load(const std::string& Filename)
+bool GLTexture::LoadTexture2D(const std::string& Filename)
 {
+    assert(m_textureTarget == GL_TEXTURE_2D);
+
     stbi_set_flip_vertically_on_load(1);
 
-    unsigned char* image_data = stbi_load(m_filePath.c_str(), &m_imageWidth, &m_imageHeight, &m_imageBPP, 0);
+    unsigned char* image_data = stbi_load(Filename.c_str(), &m_imageWidth, &m_imageHeight, &m_imageBPP, 0);
 
     if (!image_data) {
-        DEV_ERROR("Can't load texture from '%s' - %s\n", m_filePath.c_str(), stbi_failure_reason());
+        DEV_ERROR("Can't load texture from '%s' - %s\n", Filename.c_str(), stbi_failure_reason());
         return false;
     }
 
@@ -61,7 +76,7 @@ bool GLTexture::Load(const std::string& Filename)
 }
 
 
-bool GLTexture::LoadRaw(int Width, int Height, int BPP, unsigned char* pData)
+bool GLTexture::LoadTexture2D(int Width, int Height, int BPP, unsigned char* pData)
 {
     m_imageWidth = Width;
     m_imageHeight = Height;
@@ -70,14 +85,54 @@ bool GLTexture::LoadRaw(int Width, int Height, int BPP, unsigned char* pData)
     return LoadInternal(pData);
 }
 
-
-bool GLTexture::LoadInternal(void* image_data)
+// loads a cubemap texture from 6 individual texture faces
+// order:
+// +X (right)
+// -X (left)
+// +Y (top)
+// -Y (bottom)
+// +Z (front) 
+// -Z (back)
+// -------------------------------------------------------
+bool GLTexture::LoadCubemap(const std::vector<std::string>& faces)
 {
     glGenTextures(1, &m_ID);
     glBindTexture(m_textureTarget, m_ID);
 
-    if (m_textureTarget == GL_TEXTURE_2D) {
-        switch (m_imageBPP) {
+    int width, height, nrComponents;
+    for (unsigned int i = 0; i < faces.size(); i++)
+    {
+        unsigned char *data = stbi_load(faces[i].c_str(), &width, &height, &nrComponents, 0);
+        if (data)
+        {
+            glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+            stbi_image_free(data);
+        }
+        else
+        {
+            DEV_ERROR("Cubemap texture failed to load at path: %s",faces[i].c_str());
+            stbi_image_free(data);
+            return false;
+        }
+    }
+    glTexParameteri(m_textureTarget, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(m_textureTarget, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(m_textureTarget, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(m_textureTarget, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glTexParameteri(m_textureTarget, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+
+    return true;
+}
+
+
+bool GLTexture::LoadInternal(void* image_data)
+{
+    assert(m_textureTarget == GL_TEXTURE_2D);
+
+    glGenTextures(1, &m_ID);
+    glBindTexture(m_textureTarget, m_ID);
+
+    switch (m_imageBPP) {
         case 1:
             glTexImage2D(m_textureTarget, 0, GL_RED, m_imageWidth, m_imageHeight, 0, GL_RED, GL_UNSIGNED_BYTE, image_data);
             break;
@@ -93,10 +148,6 @@ bool GLTexture::LoadInternal(void* image_data)
         default:
             DEV_ERROR("Not implemented case\n");
             return false;
-        }
-    } else {
-        DEV_ERROR("Support for texture target %x is not implemented\n", m_textureTarget);
-        return false;
     }
 
     glTexParameteri(m_textureTarget, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
