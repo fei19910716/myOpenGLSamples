@@ -16,18 +16,20 @@ enum API_TYPE {
 };
 
 
-void BackendInit(int argc, char** argv, API_TYPE type = API_TYPE::API_TYPE_GL);
+void  BackendInit(int argc, char** argv, API_TYPE type = API_TYPE::API_TYPE_GL);
 
-void BackendTerminate();
+void  BackendTerminate();
 
-bool BackendCreateWindow(uint Width, uint Height, bool isFullScreen, const char* pTitle);
+bool  BackendCreateWindow(uint Width, uint Height, bool isFullScreen, const char* pTitle);
 
-void BackendRun(ICallbacks* pCallbacks);
+void  BackendRun(ICallbacks* pCallbacks);
 
-void BackendLeaveMainLoop();
+void  BackendLeaveMainLoop();
 
-void BackendSwapBuffers();
+void  BackendSwapBuffers();
 
-void BackendSetMousePos(uint x, uint y);
+void  BackendSetMousePos(uint x, uint y);
+
+void* BackendWindowHandle();
 
 KEY  BackendKeyToKey(uint Key);

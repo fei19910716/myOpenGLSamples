@@ -6,11 +6,10 @@ set(external_libs
     glad
     glfw
 
+    vulkan
     stb
     assimp
     glm
-
-    vulkan
 )
 
 foreach(external_lib ${external_libs})

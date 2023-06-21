@@ -18,4 +18,6 @@ void GLFWBackendLeaveMainLoop();
 
 void GLFWBackendSetMousePos(uint x, uint y);
 
+void* GLFWBackendWindowHandle();
+
 KEY GLFWKeyToKey(uint Key);

@@ -93,6 +93,16 @@ void BackendSetMousePos(uint x, uint y)
     }
 }
 
+void* BackendWindowHandle(){
+    switch (sBackendType) {
+        case BACKEND_TYPE_GLFW:
+            return GLFWBackendWindowHandle();
+            break;
+        default:
+            return nullptr;
+    }
+}
+
 
 KEY BackendKeyToKey(uint Key)
 {

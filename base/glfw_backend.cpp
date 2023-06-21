@@ -6,6 +6,8 @@
 
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
+#define GLFW_EXPOSE_NATIVE_WIN32
+#include <GLFW/glfw3native.h>
 
 #include <stdio.h>
 
@@ -189,6 +191,11 @@ void GLFWBackendLeaveMainLoop()
 void GLFWBackendSetMousePos(uint x, uint y)
 {
     glfwSetCursorPos(s_pWindow, (double)x, (double)y);
+}
+
+
+void* GLFWBackendWindowHandle(){
+    return reinterpret_cast<void*>(glfwGetWin32Window(s_pWindow));
 }
 
 KEY GLFWKeyToKey(uint Key)
