@@ -4,8 +4,8 @@
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
 
-#include "base/glmesh.h"
-#include "base/gltexture.h"
+#include "base/gl/glmesh.h"
+#include "base/gl/gltexture.h"
 
 #include <string>
 #include <fstream>

@@ -5,7 +5,7 @@
 #include <vector>
 #include <cassert>
 
-#include "base/globject.h"
+#include "base/gl/globject.h"
 
 enum TextureType{
     General,

@@ -1,7 +1,7 @@
 #pragma once
 
-#include "base/glvertexbuffer.h"
-#include "base/glindexbuffer.h"
+#include "base/gl/glvertexbuffer.h"
+#include "base/gl/glindexbuffer.h"
 
 class GLVertexArray: public GLObject{
 public:

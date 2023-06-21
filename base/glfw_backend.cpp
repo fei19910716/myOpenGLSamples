@@ -120,7 +120,7 @@ bool GLFWBackendCreateWindow(uint Width, uint Height, bool isFullScreen, const c
 {
     GLFWmonitor* pMonitor = isFullScreen ? glfwGetPrimaryMonitor() : NULL;
 
-    if(isVulkan)
+    if(isVulkan == true)
     {
         glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
     }
@@ -132,6 +132,17 @@ bool GLFWBackendCreateWindow(uint Width, uint Height, bool isFullScreen, const c
         #ifdef __APPLE__
         glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
         #endif
+    }
+
+    s_pWindow = glfwCreateWindow(Width, Height, pTitle, pMonitor, NULL);
+
+    if (s_pWindow == nullptr) {
+        DEV_ERROR("error creating window");
+        exit(1);
+    }
+
+    if(isVulkan == false) {
+        glfwMakeContextCurrent(s_pWindow);
 
         // glad: load all OpenGL function pointers
         // ---------------------------------------
@@ -141,15 +152,6 @@ bool GLFWBackendCreateWindow(uint Width, uint Height, bool isFullScreen, const c
             exit(1);
         }
     }
-
-    s_pWindow = glfwCreateWindow(Width, Height, pTitle, pMonitor, NULL);
-
-    if (!s_pWindow) {
-        DEV_ERROR("error creating window");
-        exit(1);
-    }
-
-    if(!isVulkan) glfwMakeContextCurrent(s_pWindow);
 
     return (s_pWindow != NULL);
 }

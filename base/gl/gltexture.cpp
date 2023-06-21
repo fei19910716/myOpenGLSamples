@@ -2,7 +2,7 @@
 
 #include <iostream>
 
-#include "utils.h"
+#include "base/utils.h"
 #include "gltexture.h"
 
 #define STB_IMAGE_IMPLEMENTATION

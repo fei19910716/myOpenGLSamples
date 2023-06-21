@@ -7,7 +7,7 @@
 
 #include "base/utils.h"
 #include "base/math.h"
-#include "base/globject.h"
+#include "base/gl/globject.h"
 
 /**
  * Technique represents the shader program 

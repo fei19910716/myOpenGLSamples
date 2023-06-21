@@ -3,9 +3,9 @@
 // holds all OpenGL type declarations
 #include <glad/glad.h> 
 
-#include "base/gltechnique.h"
+#include "base/gl/gltechnique.h"
 #include "base/utils.h"
-#include "base/glvertexarray.h"
+#include "base/gl/glvertexarray.h"
 #include "base/vertices.h"
 
 #include <vector>

@@ -3,7 +3,7 @@
 #include "base/types.h"
 #include "base/utils.h"
 
-#include "base/globject.h"
+#include "base/gl/globject.h"
 
 #define MAX_VERTEX_ATTRIBUTE_COUNT 16
 
