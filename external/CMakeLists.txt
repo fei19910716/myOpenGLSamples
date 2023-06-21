@@ -9,6 +9,8 @@ set(external_libs
     stb
     assimp
     glm
+
+    vulkan
 )
 
 foreach(external_lib ${external_libs})

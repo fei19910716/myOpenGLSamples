@@ -8,9 +8,9 @@ void GLFWBackendInit(int argc, char** argv);
 
 void GLFWBackendTerminate();
 
-bool GLFWBackendCreateWindow(uint Width, uint Height, bool isFullScreen, const char* pTitle);
+bool GLFWBackendCreateWindow(uint Width, uint Height, bool isFullScreen, const char* pTitle, bool isVulkan = false);
 
-void GLFWBackendRun(ICallbacks* pCallbacks);
+void GLFWBackendRun(ICallbacks* pCallbacks, bool isVulkan = false);
 
 void GLFWBackendSwapBuffers();
 

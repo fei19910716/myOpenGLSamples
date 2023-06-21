@@ -10,8 +10,13 @@ enum BACKEND_TYPE {
     BACKEND_TYPE_GLFW
 };
 
+enum API_TYPE {
+    API_TYPE_GL,
+    API_TYPE_VK
+};
 
-void BackendInit(int argc, char** argv);
+
+void BackendInit(int argc, char** argv, API_TYPE type = API_TYPE::API_TYPE_GL);
 
 void BackendTerminate();
 

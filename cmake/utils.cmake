@@ -49,3 +49,30 @@ add_custom_command(
 )
 
 endfunction(copy_dll target file)
+
+
+
+function(add_target target dir)
+    
+message(STATUS "starting build: ${target}")
+
+file(GLOB src_files ${dir}/*.cpp)
+add_executable(${target} ${src_files})
+
+target_link_libraries(${target} PUBLIC base)
+
+
+file(GLOB shader_files
+${dir}/*.vs
+${dir}/*.fs
+${dir}/*.tcs
+${dir}/*.tes
+${dir}/*.gs
+${dir}/*.cs)
+
+
+foreach(shader_file ${shader_files})
+    copy_shader(${target} ${shader_file})
+endforeach()
+
+endfunction(add_target dir)

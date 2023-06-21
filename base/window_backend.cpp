@@ -4,9 +4,11 @@
 #include "glfw_backend.h"
 
 static BACKEND_TYPE sBackendType = BACKEND_TYPE_GLFW;
+static API_TYPE sAPIType = API_TYPE_GL;
 
-void BackendInit(int argc, char** argv)
+void BackendInit(int argc, char** argv, API_TYPE type)
 {
+    sAPIType = type;
     switch (sBackendType) {
         case BACKEND_TYPE_GLFW:
             GLFWBackendInit(argc, argv);
@@ -35,7 +37,7 @@ bool BackendCreateWindow(uint Width, uint Height, bool isFullScreen, const char*
 
     switch (sBackendType) {
         case BACKEND_TYPE_GLFW:
-            return GLFWBackendCreateWindow(Width, Height, isFullScreen, pTitle);
+            return GLFWBackendCreateWindow(Width, Height, isFullScreen, pTitle, sAPIType == API_TYPE_VK);
         default:
             assert(0);
     }
@@ -48,7 +50,7 @@ void BackendRun(ICallbacks* pCallbacks)
 {
     switch (sBackendType) {
         case BACKEND_TYPE_GLFW:
-            GLFWBackendRun(pCallbacks);
+            GLFWBackendRun(pCallbacks, sAPIType == API_TYPE_VK);
             break;
         default:
             assert(0);

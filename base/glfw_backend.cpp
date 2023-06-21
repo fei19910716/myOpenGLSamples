@@ -3,14 +3,14 @@
 #ifdef WIN32
 #include <Windows.h>
 #endif
-#include <stdio.h>
 
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 
+#include <stdio.h>
+
 #include "utils.h"
 #include "glfw_backend.h"
-
 
 static ICallbacks* s_glfw_pCallbacks = NULL;
 static GLFWwindow* s_pWindow         = NULL;
@@ -116,20 +116,31 @@ void GLFWBackendTerminate()
 }
 
 
-bool GLFWBackendCreateWindow(uint Width, uint Height, bool isFullScreen, const char* pTitle)
+bool GLFWBackendCreateWindow(uint Width, uint Height, bool isFullScreen, const char* pTitle, bool isVulkan)
 {
     GLFWmonitor* pMonitor = isFullScreen ? glfwGetPrimaryMonitor() : NULL;
-    /*glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, true);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);*/
 
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+    if(isVulkan)
+    {
+        glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
+    }
+    else
+    {
+        glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+        glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+        glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+        #ifdef __APPLE__
+        glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
+        #endif
 
-    #ifdef __APPLE__
-    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
-    #endif
+        // glad: load all OpenGL function pointers
+        // ---------------------------------------
+        if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
+        {
+            DEV_ERROR("Failed to initialize GLAD");
+            exit(1);
+        }
+    }
 
     s_pWindow = glfwCreateWindow(Width, Height, pTitle, pMonitor, NULL);
 
@@ -138,19 +149,12 @@ bool GLFWBackendCreateWindow(uint Width, uint Height, bool isFullScreen, const c
         exit(1);
     }
 
-    glfwMakeContextCurrent(s_pWindow);
+    if(!isVulkan) glfwMakeContextCurrent(s_pWindow);
 
-    // glad: load all OpenGL function pointers
-    // ---------------------------------------
-    if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
-    {
-        DEV_ERROR("Failed to initialize GLAD");
-        exit(1);
-    }    
     return (s_pWindow != NULL);
 }
 
-void GLFWBackendRun(ICallbacks* pCallbacks)
+void GLFWBackendRun(ICallbacks* pCallbacks, bool isVulkan)
 {
     if (!pCallbacks) {
         DEV_ERROR("callbacks not specified");
@@ -162,7 +166,7 @@ void GLFWBackendRun(ICallbacks* pCallbacks)
 
     while (!glfwWindowShouldClose(s_pWindow)) {
         s_glfw_pCallbacks->RenderSceneCB();
-        glfwSwapBuffers(s_pWindow);
+        if(!isVulkan) glfwSwapBuffers(s_pWindow);
         glfwPollEvents();
     }
 }
