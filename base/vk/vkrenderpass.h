@@ -1,7 +1,8 @@
 #pragma once
 
 #include "vulkan/vulkan.h"
-#include "base/vk/vkinstance.h"
+#include "vkinstance.h"
+#include "vkdevice.h"
 
 #include <cassert>
 #include <vector>

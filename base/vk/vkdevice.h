@@ -14,11 +14,9 @@ public:
     VKDevice(VKPhysicalDevice* physicalDevice):
     m_physicalDevice(physicalDevice)
     {
-        QueueFamilyIndices indices = physicalDevice->GetQueueFamilyIndices();
-
         VkDeviceQueueCreateInfo queueCreateInfo{};
         queueCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
-        queueCreateInfo.queueFamilyIndex = indices.graphicsFamily.value();
+        queueCreateInfo.queueFamilyIndex = physicalDevice->GraphicsQueueFamily();
         queueCreateInfo.queueCount = 1;
 
         float queuePriority = 1.0f;
@@ -41,8 +39,8 @@ public:
 
         assert(vkCreateDevice(physicalDevice->Handle(), &createInfo, nullptr, &handle) == VK_SUCCESS);
 
-        vkGetDeviceQueue(handle, indices.graphicsFamily.value(), 0, &m_graphicsQueue);
-        vkGetDeviceQueue(handle, indices.presentFamily.value(), 0, &m_presentQueue);
+        vkGetDeviceQueue(handle, physicalDevice->GraphicsQueueFamily(), 0, &m_graphicsQueue);
+        vkGetDeviceQueue(handle, physicalDevice->PresentQueueFamily(),  0, &m_presentQueue);
     }
 
     VKPhysicalDevice* PhysicalDevice() const{

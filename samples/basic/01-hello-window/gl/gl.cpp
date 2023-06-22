@@ -11,7 +11,8 @@ const unsigned int SCR_WIDTH = 800;
 const unsigned int SCR_HEIGHT = 600;
 
 class SampleApp: public App, public ICallbacks{
-    public:
+public:
+
     void RenderSceneCB() override
     {
         // render

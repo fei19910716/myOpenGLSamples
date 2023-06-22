@@ -11,7 +11,7 @@
 #include <optional>
 
 struct QueueFamilyIndices {
-    std::optional<uint8_t> graphicsFamily;
+    std::optional<uint32_t> graphicsFamily;
     std::optional<uint32_t> presentFamily;
 
     bool isComplete() {
@@ -54,8 +54,12 @@ public:
         vkGetPhysicalDeviceMemoryProperties(this->handle, &deviceMemoryProperties);
     }
 
-    QueueFamilyIndices GetQueueFamilyIndices() const{
-        return indices;
+    uint32_t GraphicsQueueFamily() const{
+        return indices.graphicsFamily.value();
+    }
+
+    uint32_t PresentQueueFamily() const{
+        return indices.presentFamily.value();
     }
 
 private:

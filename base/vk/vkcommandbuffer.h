@@ -12,20 +12,20 @@
 class VKCommandBuffer: public VKObject<VkCommandBuffer>{
 public:
     VKCommandBuffer(VKDevice* device){
-        QueueFamilyIndices queueFamilyIndices = device->PhysicalDevice()->GetQueueFamilyIndices();
 
+        VkCommandPool commandPool;
         VkCommandPoolCreateInfo poolInfo{};
         poolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
         poolInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
-        poolInfo.queueFamilyIndex = queueFamilyIndices.graphicsFamily.value();
+        poolInfo.queueFamilyIndex = device->PhysicalDevice()->GraphicsQueueFamily();
 
-        if (vkCreateCommandPool(device->Handle(), &poolInfo, nullptr, &m_commandPool) != VK_SUCCESS) {
+        if (vkCreateCommandPool(device->Handle(), &poolInfo, nullptr, &commandPool) != VK_SUCCESS) {
             throw std::runtime_error("failed to create command pool!");
         }
 
         VkCommandBufferAllocateInfo allocInfo{};
         allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-        allocInfo.commandPool = m_commandPool;
+        allocInfo.commandPool = commandPool;
         allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
         allocInfo.commandBufferCount = 1;
 
@@ -34,6 +34,4 @@ public:
         }
     }
 
-
-    VkCommandPool m_commandPool;
 };

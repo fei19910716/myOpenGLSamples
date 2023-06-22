@@ -29,8 +29,8 @@ public:
         SwapChainSupportDetails swapChainSupport = querySwapChainSupport(device->PhysicalDevice(),surface);
 
         VkSurfaceFormatKHR surfaceFormat = chooseSwapSurfaceFormat(swapChainSupport.formats);
-        VkPresentModeKHR presentMode = chooseSwapPresentMode(swapChainSupport.presentModes);
-        VkExtent2D extent = chooseSwapExtent(swapChainSupport.capabilities,width,height);
+        VkPresentModeKHR   presentMode   = chooseSwapPresentMode(swapChainSupport.presentModes);
+        VkExtent2D         extent        = chooseSwapExtent(swapChainSupport.capabilities,width,height);
 
         uint32_t imageCount = swapChainSupport.capabilities.minImageCount + 1;
         if (swapChainSupport.capabilities.maxImageCount > 0 && imageCount > swapChainSupport.capabilities.maxImageCount) {
@@ -38,20 +38,21 @@ public:
         }
 
         VkSwapchainCreateInfoKHR createInfo{};
-        createInfo.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
-        createInfo.surface = surface->Handle();
-
-        createInfo.minImageCount = imageCount;
-        createInfo.imageFormat = surfaceFormat.format;
-        createInfo.imageColorSpace = surfaceFormat.colorSpace;
-        createInfo.imageExtent = extent;
+        createInfo.sType            = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
+        createInfo.surface          = surface->Handle();
+        createInfo.minImageCount    = imageCount;
+        createInfo.imageFormat      = surfaceFormat.format;
+        createInfo.imageColorSpace  = surfaceFormat.colorSpace;
+        createInfo.imageExtent      = extent;
         createInfo.imageArrayLayers = 1;
-        createInfo.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
+        createInfo.imageUsage       = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
 
-        QueueFamilyIndices indices = device->PhysicalDevice()->GetQueueFamilyIndices();
-        uint32_t queueFamilyIndices[] = {indices.graphicsFamily.value(), indices.presentFamily.value()};
+        uint32_t queueFamilyIndices[] = {
+            device->PhysicalDevice()->GraphicsQueueFamily(), 
+            device->PhysicalDevice()->PresentQueueFamily()
+        };
 
-        if (indices.graphicsFamily != indices.presentFamily) {
+        if (queueFamilyIndices[0] != queueFamilyIndices[1]) {
             createInfo.imageSharingMode = VK_SHARING_MODE_CONCURRENT;
             createInfo.queueFamilyIndexCount = 2;
             createInfo.pQueueFamilyIndices = queueFamilyIndices;
@@ -59,61 +60,49 @@ public:
             createInfo.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE;
         }
 
-        createInfo.preTransform = swapChainSupport.capabilities.currentTransform;
-        createInfo.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
-        createInfo.presentMode = presentMode;
-        createInfo.clipped = VK_TRUE;
-
-        createInfo.oldSwapchain = VK_NULL_HANDLE;
+        createInfo.preTransform     = swapChainSupport.capabilities.currentTransform;
+        createInfo.compositeAlpha   = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
+        createInfo.presentMode      = presentMode;
+        createInfo.clipped          = VK_TRUE;
+        createInfo.oldSwapchain     = VK_NULL_HANDLE;
 
         if (vkCreateSwapchainKHR(device->Handle(), &createInfo, nullptr, &handle) != VK_SUCCESS) {
             throw std::runtime_error("failed to create swap chain!");
         }
 
-        std::vector<VkImage> images;
-        vkGetSwapchainImagesKHR(device->Handle(), handle, &imageCount, nullptr);
-        images.resize(imageCount);
-        vkGetSwapchainImagesKHR(device->Handle(), handle, &imageCount, images.data());
+        CreateImages();
+        CreateImageViews();
+        CreateCommandBuffers();
 
-        m_imageFormat = surfaceFormat.format;
-        m_extent = extent;
-
-        m_imageViews.resize(images.size());
-        for(int i = 0; i < images.size(); i++){
-            VkImageViewCreateInfo createInfo{};
-            createInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
-            createInfo.image = images[i];
-            createInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
-            createInfo.format = m_imageFormat;
-            createInfo.components.r = VK_COMPONENT_SWIZZLE_IDENTITY;
-            createInfo.components.g = VK_COMPONENT_SWIZZLE_IDENTITY;
-            createInfo.components.b = VK_COMPONENT_SWIZZLE_IDENTITY;
-            createInfo.components.a = VK_COMPONENT_SWIZZLE_IDENTITY;
-            createInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-            createInfo.subresourceRange.baseMipLevel = 0;
-            createInfo.subresourceRange.levelCount = 1;
-            createInfo.subresourceRange.baseArrayLayer = 0;
-            createInfo.subresourceRange.layerCount = 1;
-
-            assert(vkCreateImageView(device->Handle(), &createInfo, nullptr, &m_imageViews[i]) == VK_SUCCESS);
-        }
+        m_imageFormat   = surfaceFormat.format;
+        m_extent        = extent;
     }
 
-    VkFormat GetImageFormat() const{
+    VkFormat ImageFormat() const{
         return m_imageFormat;
     }
 
-    VkExtent2D GetExtent2D() const{
+    VkExtent2D Extent2D() const{
         return m_extent;
     }
 
-    VkImageView GetImageView(int index) const{
+    const VkCommandBuffer* CommandBuffer(int index) const{
+        assert(index < m_commandBuffers.size());
+        return &m_commandBuffers[index];
+    }
+
+    const VkImageView ImageView(int index) const{
         assert(index < m_imageViews.size());
         return m_imageViews[index];
     }
 
-    VkDevice DeviceHandle() const{
-        return m_device->Handle();
+    const VkImage Image(int index) const{
+        assert(index < m_images.size());
+        return m_images[index];
+    }
+
+    size_t ImageCount() const{
+        return m_imageViews.size();
     }
 
 private:
@@ -156,7 +145,6 @@ private:
 
     SwapChainSupportDetails querySwapChainSupport(VKPhysicalDevice* physicalDevice, VKSurface* surface) {
         SwapChainSupportDetails details;
-
         vkGetPhysicalDeviceSurfaceCapabilitiesKHR(physicalDevice->Handle(), surface->Handle(), &details.capabilities);
 
         uint32_t formatCount;
@@ -178,7 +166,67 @@ private:
         return details;
     }
 
-    std::vector<VkImageView>    m_imageViews;
+    void CreateImages()
+    {
+        uint32_t imageCount = 0;
+        vkGetSwapchainImagesKHR(m_device->Handle(), handle, &imageCount, nullptr);
+
+        m_images.resize(imageCount);
+        vkGetSwapchainImagesKHR(m_device->Handle(), handle, &imageCount, m_images.data());
+    }
+
+    void CreateImageViews()
+    {
+        uint32_t imageCount = (uint32_t)m_images.size();
+
+        m_imageViews.resize(imageCount);
+        for(uint32_t i = 0; i < imageCount; i++){
+            VkImageViewCreateInfo createInfo{};
+            createInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+            createInfo.image = m_images[i];
+            createInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
+            createInfo.format = m_imageFormat;
+            createInfo.components.r = VK_COMPONENT_SWIZZLE_IDENTITY;
+            createInfo.components.g = VK_COMPONENT_SWIZZLE_IDENTITY;
+            createInfo.components.b = VK_COMPONENT_SWIZZLE_IDENTITY;
+            createInfo.components.a = VK_COMPONENT_SWIZZLE_IDENTITY;
+            createInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+            createInfo.subresourceRange.baseMipLevel = 0;
+            createInfo.subresourceRange.levelCount = 1;
+            createInfo.subresourceRange.baseArrayLayer = 0;
+            createInfo.subresourceRange.layerCount = 1;
+
+            assert(vkCreateImageView(m_device->Handle(), &createInfo, nullptr, &m_imageViews[i]) == VK_SUCCESS);
+        }
+    }
+
+
+    void CreateCommandBuffers()
+    {
+        m_commandBuffers.resize(m_images.size());
+
+        VkCommandPool cmdBufPool;
+        VkCommandPoolCreateInfo cmdPoolCreateInfo = {};
+        cmdPoolCreateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
+        cmdPoolCreateInfo.queueFamilyIndex = m_device->PhysicalDevice()->GraphicsQueueFamily();
+        
+        assert(vkCreateCommandPool(m_device->Handle(), &cmdPoolCreateInfo, NULL, &cmdBufPool) == VK_SUCCESS);    
+        DEV_INFO("vkCreateCommandPool success!");
+        
+        VkCommandBufferAllocateInfo cmdBufAllocInfo = {};
+        cmdBufAllocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+        cmdBufAllocInfo.commandPool = cmdBufPool;
+        cmdBufAllocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+        cmdBufAllocInfo.commandBufferCount = (uint32_t)m_images.size();
+
+        assert(vkAllocateCommandBuffers(m_device->Handle(), &cmdBufAllocInfo, m_commandBuffers.data()) == VK_SUCCESS);          
+        DEV_INFO("vkAllocateCommandBuffers success!");
+    }
+
+    std::vector<VkImage>         m_images;
+    std::vector<VkImageView>     m_imageViews;
+    std::vector<VkCommandBuffer> m_commandBuffers;
+
     VkFormat                    m_imageFormat;
     VkExtent2D                  m_extent;
 
