@@ -9,6 +9,7 @@
 #include "base/vk/vkrenderpass.h"
 #include "base/vk/vkpipeline.h"
 #include "base/vk/vkframebuffer.h"
+#include "base/vk/vkcommandbuffer.h"
 
 // settings
 const unsigned int SCR_WIDTH = 800;
@@ -28,13 +29,13 @@ public:
         uint32_t imageIndex;
         vkAcquireNextImageKHR(m_device->Handle(), m_swapchain->Handle(), UINT64_MAX, VK_NULL_HANDLE, VK_NULL_HANDLE, &imageIndex);
 
-        vkResetCommandBuffer(commandBuffer, /*VkCommandBufferResetFlagBits*/ 0);
-        RecordCommandBuffer(commandBuffer, imageIndex);
+        vkResetCommandBuffer(m_commandBuffer->Handle(), /*VkCommandBufferResetFlagBits*/ 0);
+        RecordCommandBuffer(m_commandBuffer->Handle(), imageIndex);
 
         VkSubmitInfo submitInfo{};
         submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
         submitInfo.commandBufferCount = 1;
-        submitInfo.pCommandBuffers = &commandBuffer;
+        submitInfo.pCommandBuffers = m_commandBuffer->pHandle();
 
         if (vkQueueSubmit(m_device->m_graphicsQueue, 1, &submitInfo, VK_NULL_HANDLE) != VK_SUCCESS) {
             throw std::runtime_error("failed to submit draw command buffer!");
@@ -74,7 +75,7 @@ public:
     VulkanExample(){
         CreateBasicObjects();
         CreateRenderPass();
-        CreateCommandBuffer();
+        CreateFrameBuffer();
     }
 
     ~VulkanExample(){
@@ -97,6 +98,9 @@ public:
 
         m_swapchain = new VKSwapChain(m_device,m_surface,SCR_WIDTH,SCR_HEIGHT);
         DEV_INFO("create swapchain success!");
+
+        m_commandBuffer = new VKCommandBuffer(m_device);
+        DEV_INFO("create commandBuffer success!");
     }
 
     void CreateRenderPass(){
@@ -129,36 +133,15 @@ public:
 
         m_renderpass = new VKRenderPass(m_device, {colorAttachment}, {subpass}, {dependency});
         DEV_INFO("create renderpass success!");
-
-        m_pipeline = new VKGraphicsPipeline(m_renderpass);
-
-        m_framebuffer = new VKFrameBuffer(m_swapchain,m_renderpass);
     }
 
-    void CreateCommandBuffer(){
-        QueueFamilyIndices queueFamilyIndices = m_physicalDevice->GetQueueFamilyIndices();
-
-        VkCommandPoolCreateInfo poolInfo{};
-        poolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
-        poolInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
-        poolInfo.queueFamilyIndex = queueFamilyIndices.graphicsFamily.value();
-
-        if (vkCreateCommandPool(m_device->Handle(), &poolInfo, nullptr, &commandPool) != VK_SUCCESS) {
-            throw std::runtime_error("failed to create command pool!");
-        }
-
-        VkCommandBufferAllocateInfo allocInfo{};
-        allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-        allocInfo.commandPool = commandPool;
-        allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-        allocInfo.commandBufferCount = 1;
-
-        if (vkAllocateCommandBuffers(m_device->Handle(), &allocInfo, &commandBuffer) != VK_SUCCESS) {
-            throw std::runtime_error("failed to allocate command buffers!");
-        }
+    void CreateFrameBuffer(){
+        auto imageviews = {
+            m_swapchain->GetImageView(0)
+        };
+        m_framebuffer = new VKFrameBuffer(m_renderpass, imageviews, m_swapchain->GetExtent2D());
+        DEV_INFO("create framebuffer success!");
     }
-    VkCommandBuffer commandBuffer;
-    VkCommandPool commandPool;
 
     void RecordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t imageIndex) {
         VkCommandBufferBeginInfo beginInfo{};
@@ -180,8 +163,6 @@ public:
         renderPassInfo.pClearValues = &clearColor;
 
         vkCmdBeginRenderPass(commandBuffer, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
-
-        vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_pipeline->Handle());
 
         VkViewport viewport{};
         viewport.x = 0.0f;
@@ -216,6 +197,7 @@ private:
     VKRenderPass* m_renderpass = nullptr;
     VKGraphicsPipeline* m_pipeline = nullptr;
     VKFrameBuffer* m_framebuffer = nullptr;
+    VKCommandBuffer* m_commandBuffer = nullptr;
 };
 
 int main(int argc, char** argv)

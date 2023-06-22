@@ -31,8 +31,8 @@ public:
     }
 
 
-    VKDevice* GetDevice() const{
-        return m_device;
+    VkDevice DeviceHandle() const{
+        return m_device->Handle();
     }
 
 private:

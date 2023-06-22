@@ -107,12 +107,13 @@ public:
         return m_extent;
     }
 
-    std::vector<VkImageView> GetImageViews() const{
-        return m_imageViews;
+    VkImageView GetImageView(int index) const{
+        assert(index < m_imageViews.size());
+        return m_imageViews[index];
     }
 
-    VKDevice* GetDevice() const{
-        return m_device;
+    VkDevice DeviceHandle() const{
+        return m_device->Handle();
     }
 
 private:

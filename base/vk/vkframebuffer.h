@@ -11,20 +11,17 @@
 class VKFrameBuffer: public VKObject<VkFramebuffer>{
 
 public:
-    VKFrameBuffer(VKSwapChain* swapchain, VKRenderPass* renderpass){
+    VKFrameBuffer(VKRenderPass* renderpass, const std::vector<VkImageView>& imageViews, VkExtent2D extent){
 
         VkFramebufferCreateInfo framebufferInfo{};
         framebufferInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
         framebufferInfo.renderPass = renderpass->Handle();
-        framebufferInfo.attachmentCount = 1;
-        framebufferInfo.pAttachments = swapchain->GetImageViews().data();
-        framebufferInfo.width = swapchain->GetExtent2D().width;
-        framebufferInfo.height = swapchain->GetExtent2D().height;
+        framebufferInfo.attachmentCount = (uint32_t)imageViews.size();
+        framebufferInfo.pAttachments = imageViews.data();
+        framebufferInfo.width = extent.width;
+        framebufferInfo.height = extent.height;
         framebufferInfo.layers = 1;
 
-        assert(vkCreateFramebuffer(swapchain->GetDevice()->Handle(), &framebufferInfo, nullptr, &handle) == VK_SUCCESS);
+        assert(vkCreateFramebuffer(renderpass->DeviceHandle(), &framebufferInfo, nullptr, &handle) == VK_SUCCESS);
     }
-
-private:
-    VkPipelineLayout m_pipelineLayout;
 };

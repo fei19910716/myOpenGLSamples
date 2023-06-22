@@ -11,6 +11,10 @@ class VKObject{
         return handle;
     }
 
+    virtual const T* pHandle(){
+        return &handle;
+    }
+
 protected:
     T handle;
 };

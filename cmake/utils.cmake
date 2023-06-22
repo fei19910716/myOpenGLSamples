@@ -68,7 +68,8 @@ ${dir}/*.fs
 ${dir}/*.tcs
 ${dir}/*.tes
 ${dir}/*.gs
-${dir}/*.cs)
+${dir}/*.cs
+${dir}/*.spv)
 
 
 foreach(shader_file ${shader_files})
