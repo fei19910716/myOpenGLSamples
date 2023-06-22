@@ -7,6 +7,7 @@
 #include "vkimageview.h"
 #include "vkcommandbuffer.h"
 #include "vkcommandbufferpool.h"
+#include "vksync.h"
 
 #include <cassert>
 #include <vector>
@@ -76,6 +77,7 @@ public:
         CreateImages();
         CreateImageViews();
         CreateCommandBuffers();
+        CreateFences();
 
         m_imageFormat   = surfaceFormat.format;
         m_extent        = extent;
@@ -103,6 +105,11 @@ public:
 
     VkExtent2D Extent2D() const{
         return m_extent;
+    }
+
+    const VKFence* Fence(int index) const{
+        assert(index < m_fences.size());
+        return m_fences[index];
     }
 
     const VKCommandBuffer* CommandBuffer(int index) const{
@@ -216,9 +223,19 @@ private:
         m_commandBuffers = pool->AllocateCommandBuffers(imageCount);
     }
 
+    void CreateFences()
+    {
+        uint32_t imageCount = (uint32_t)m_images.size();
+
+        for(uint32_t i = 0; i < imageCount; i++){
+            m_fences.push_back(new VKFence(m_device));
+        }
+    }
+
     std::vector<VKImage*>         m_images;
     std::vector<VKImageView*>     m_imageViews;
     std::vector<VKCommandBuffer*> m_commandBuffers;
+    std::vector<VKFence*>         m_fences;
 
     VkFormat                    m_imageFormat;
     VkExtent2D                  m_extent;

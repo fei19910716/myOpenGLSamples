@@ -65,7 +65,7 @@ public:
         return indices.presentFamily.value();
     }
 
-private:
+public:
 
     bool IsDeviceSuitable(VkPhysicalDevice device, VKSurface* surface) {
 

@@ -89,6 +89,9 @@ public:
 
         m_swapchain = new VKSwapChain(m_device,m_surface,SCR_WIDTH,SCR_HEIGHT);
         DEV_INFO("create swapchain success!");
+
+        m_renderCompleteSemaphore  = new VKSemaphore(m_device);
+        m_presentCompleteSemaphore = new VKSemaphore(m_device);
     }
 
     
@@ -128,6 +131,7 @@ private:
     VKPhysicalDevice*   m_physicalDevice = nullptr;
     VKDevice*           m_device = nullptr;
     VKSwapChain*        m_swapchain = nullptr;
+    VKSemaphore*        m_renderCompleteSemaphore = nullptr, *m_presentCompleteSemaphore = nullptr;
 };
 
 int main(int argc, char** argv)
