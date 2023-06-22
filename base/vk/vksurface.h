@@ -1,11 +1,11 @@
 #pragma once
 
-#include "vulkan/vulkan.h"
-#include "base/vk/vkinstance.h"
+#include "vkinstance.h"
 
 class VKSurface: public VKObject<VkSurfaceKHR>{
 public:
-    VKSurface(VKInstance* instance, void* hwnd){
+    VKSurface(VKInstance* instance, void* hwnd): m_instance(instance)
+    {
         
         VkWin32SurfaceCreateInfoKHR sci;
         PFN_vkCreateWin32SurfaceKHR vkCreateWin32SurfaceKHR;
@@ -21,6 +21,12 @@ public:
         sci.hinstance = GetModuleHandle(NULL);
         sci.hwnd = reinterpret_cast<HWND>(hwnd);
 
-        vkCreateWin32SurfaceKHR(instance->Handle(), &sci, nullptr, &handle);
+        vkCreateWin32SurfaceKHR(m_instance->Handle(), &sci, nullptr, &handle);
     }
+
+    ~VKSurface(){
+        vkDestroySurfaceKHR(m_instance->Handle(),handle,nullptr);
+    }
+
+    VKInstance* m_instance = nullptr;
 };

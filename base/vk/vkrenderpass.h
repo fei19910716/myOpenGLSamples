@@ -1,6 +1,5 @@
 #pragma once
 
-#include "vulkan/vulkan.h"
 #include "vkinstance.h"
 #include "vkdevice.h"
 
@@ -29,6 +28,10 @@ public:
         renderPassInfo.pDependencies = dependency.data();
 
         assert(vkCreateRenderPass(device->Handle(), &renderPassInfo, nullptr, &handle) == VK_SUCCESS);
+    }
+
+    ~VKRenderPass(){
+        vkDestroyRenderPass(m_device->Handle(),handle,nullptr);
     }
 
 

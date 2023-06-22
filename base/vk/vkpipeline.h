@@ -1,6 +1,5 @@
 #pragma once
 
-#include "vulkan/vulkan.h"
 #include "base/utils.h"
 #include "vkrenderpass.h"
 

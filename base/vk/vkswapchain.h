@@ -1,9 +1,12 @@
 #pragma once
 
-#include "vulkan/vulkan.h"
 #include "base/utils.h"
 #include "vkdevice.h"
 #include "vksurface.h"
+#include "vkimage.h"
+#include "vkimageview.h"
+#include "vkcommandbuffer.h"
+#include "vkcommandbufferpool.h"
 
 #include <cassert>
 #include <vector>
@@ -78,6 +81,22 @@ public:
         m_extent        = extent;
     }
 
+    ~VKSwapChain(){
+        vkDestroySwapchainKHR(m_device->Handle(),handle,nullptr);
+
+        for(auto image: m_images){
+            SAFE_DELETE(image);
+        }
+
+        for(auto imageView: m_imageViews){
+            SAFE_DELETE(imageView);
+        }
+
+        for(auto buffer: m_commandBuffers){
+            SAFE_DELETE(buffer);
+        }
+    }
+
     VkFormat ImageFormat() const{
         return m_imageFormat;
     }
@@ -86,17 +105,17 @@ public:
         return m_extent;
     }
 
-    const VkCommandBuffer* CommandBuffer(int index) const{
+    const VKCommandBuffer* CommandBuffer(int index) const{
         assert(index < m_commandBuffers.size());
-        return &m_commandBuffers[index];
+        return m_commandBuffers[index];
     }
 
-    const VkImageView ImageView(int index) const{
+    const VKImageView* ImageView(int index) const{
         assert(index < m_imageViews.size());
         return m_imageViews[index];
     }
 
-    const VkImage Image(int index) const{
+    const VKImage* Image(int index) const{
         assert(index < m_images.size());
         return m_images[index];
     }
@@ -171,61 +190,35 @@ private:
         uint32_t imageCount = 0;
         vkGetSwapchainImagesKHR(m_device->Handle(), handle, &imageCount, nullptr);
 
-        m_images.resize(imageCount);
-        vkGetSwapchainImagesKHR(m_device->Handle(), handle, &imageCount, m_images.data());
+        std::vector<VkImage> images(imageCount);
+        vkGetSwapchainImagesKHR(m_device->Handle(), handle, &imageCount, images.data());
+
+        for(auto image: images){
+            m_images.push_back(new VKImage(m_device, image));
+        }
     }
 
     void CreateImageViews()
     {
         uint32_t imageCount = (uint32_t)m_images.size();
 
-        m_imageViews.resize(imageCount);
         for(uint32_t i = 0; i < imageCount; i++){
-            VkImageViewCreateInfo createInfo{};
-            createInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
-            createInfo.image = m_images[i];
-            createInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
-            createInfo.format = m_imageFormat;
-            createInfo.components.r = VK_COMPONENT_SWIZZLE_IDENTITY;
-            createInfo.components.g = VK_COMPONENT_SWIZZLE_IDENTITY;
-            createInfo.components.b = VK_COMPONENT_SWIZZLE_IDENTITY;
-            createInfo.components.a = VK_COMPONENT_SWIZZLE_IDENTITY;
-            createInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-            createInfo.subresourceRange.baseMipLevel = 0;
-            createInfo.subresourceRange.levelCount = 1;
-            createInfo.subresourceRange.baseArrayLayer = 0;
-            createInfo.subresourceRange.layerCount = 1;
-
-            assert(vkCreateImageView(m_device->Handle(), &createInfo, nullptr, &m_imageViews[i]) == VK_SUCCESS);
+            m_imageViews.push_back(new VKImageView(m_device,m_images[i],m_imageFormat));
         }
     }
 
 
     void CreateCommandBuffers()
     {
-        m_commandBuffers.resize(m_images.size());
+        uint32_t imageCount = (uint32_t)m_images.size();
 
-        VkCommandPool cmdBufPool;
-        VkCommandPoolCreateInfo cmdPoolCreateInfo = {};
-        cmdPoolCreateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
-        cmdPoolCreateInfo.queueFamilyIndex = m_device->PhysicalDevice()->GraphicsQueueFamily();
-        
-        assert(vkCreateCommandPool(m_device->Handle(), &cmdPoolCreateInfo, NULL, &cmdBufPool) == VK_SUCCESS);    
-        DEV_INFO("vkCreateCommandPool success!");
-        
-        VkCommandBufferAllocateInfo cmdBufAllocInfo = {};
-        cmdBufAllocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-        cmdBufAllocInfo.commandPool = cmdBufPool;
-        cmdBufAllocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-        cmdBufAllocInfo.commandBufferCount = (uint32_t)m_images.size();
-
-        assert(vkAllocateCommandBuffers(m_device->Handle(), &cmdBufAllocInfo, m_commandBuffers.data()) == VK_SUCCESS);          
-        DEV_INFO("vkAllocateCommandBuffers success!");
+        VKCommandBufferPool* pool = new VKCommandBufferPool(m_device);
+        m_commandBuffers = pool->AllocateCommandBuffers(imageCount);
     }
 
-    std::vector<VkImage>         m_images;
-    std::vector<VkImageView>     m_imageViews;
-    std::vector<VkCommandBuffer> m_commandBuffers;
+    std::vector<VKImage*>         m_images;
+    std::vector<VKImageView*>     m_imageViews;
+    std::vector<VKCommandBuffer*> m_commandBuffers;
 
     VkFormat                    m_imageFormat;
     VkExtent2D                  m_extent;

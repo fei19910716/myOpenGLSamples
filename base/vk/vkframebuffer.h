@@ -1,6 +1,5 @@
 #pragma once
 
-#include "vulkan/vulkan.h"
 #include "base/utils.h"
 #include "vkrenderpass.h"
 #include "vkswapchain.h"
@@ -11,7 +10,9 @@
 class VKFrameBuffer: public VKObject<VkFramebuffer>{
 
 public:
-    VKFrameBuffer(VKRenderPass* renderpass, const std::vector<VkImageView>& imageViews, VkExtent2D extent){
+    VKFrameBuffer(VKRenderPass* renderpass, const std::vector<VkImageView>& imageViews, VkExtent2D extent):
+    m_renderpass(renderpass)
+    {
 
         VkFramebufferCreateInfo framebufferInfo{};
         framebufferInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
@@ -24,4 +25,10 @@ public:
 
         assert(vkCreateFramebuffer(renderpass->DeviceHandle(), &framebufferInfo, nullptr, &handle) == VK_SUCCESS);
     }
+
+    ~VKFrameBuffer(){
+        vkDestroyFramebuffer(m_renderpass->DeviceHandle(),handle,nullptr);
+    }
+
+    VKRenderPass* m_renderpass = nullptr;
 };

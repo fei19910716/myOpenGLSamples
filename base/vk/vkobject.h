@@ -1,5 +1,7 @@
 #pragma once
 
+#include "vulkan/vulkan.h"
+
 template<typename T>
 class VKObject{
     public:
@@ -7,11 +9,11 @@ class VKObject{
     virtual ~VKObject() = default;
     VKObject() = default;
 
-    virtual T& Handle(){
+    virtual const T& Handle() const{
         return handle;
     }
 
-    virtual const T* pHandle(){
+    virtual const T* pHandle() const{
         return &handle;
     }
 

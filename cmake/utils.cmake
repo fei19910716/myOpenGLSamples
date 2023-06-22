@@ -61,6 +61,9 @@ add_executable(${target} ${src_files})
 
 target_link_libraries(${target} PUBLIC base)
 
+if(WIN32)
+target_compile_definitions(${target} PUBLIC VK_USE_PLATFORM_WIN32_KHR)
+endif()
 
 file(GLOB shader_files
 ${dir}/*.vs

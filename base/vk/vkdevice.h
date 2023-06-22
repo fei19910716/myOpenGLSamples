@@ -1,6 +1,5 @@
 #pragma once
 
-#include "vulkan/vulkan.h"
 #include "base/utils.h"
 #include "vkphysicaldevice.h"
 
@@ -11,8 +10,7 @@
 
 class VKDevice: public VKObject<VkDevice>{
 public:
-    VKDevice(VKPhysicalDevice* physicalDevice):
-    m_physicalDevice(physicalDevice)
+    VKDevice(VKPhysicalDevice* physicalDevice): m_physicalDevice(physicalDevice)
     {
         VkDeviceQueueCreateInfo queueCreateInfo{};
         queueCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
@@ -41,6 +39,10 @@ public:
 
         vkGetDeviceQueue(handle, physicalDevice->GraphicsQueueFamily(), 0, &m_graphicsQueue);
         vkGetDeviceQueue(handle, physicalDevice->PresentQueueFamily(),  0, &m_presentQueue);
+    }
+
+    ~VKDevice(){
+        vkDestroyDevice(handle,nullptr);
     }
 
     VKPhysicalDevice* PhysicalDevice() const{

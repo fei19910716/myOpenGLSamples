@@ -1,6 +1,5 @@
 #pragma once
 
-#include "vulkan/vulkan.h"
 #include "base/utils.h"
 #include "vkinstance.h"
 #include "vksurface.h"
@@ -52,6 +51,10 @@ public:
         vkGetPhysicalDeviceProperties(this->handle, &deviceProperties);
         vkGetPhysicalDeviceFeatures(this->handle, &deviceFeatures);
         vkGetPhysicalDeviceMemoryProperties(this->handle, &deviceMemoryProperties);
+    }
+
+    ~VKPhysicalDevice(){
+        
     }
 
     uint32_t GraphicsQueueFamily() const{

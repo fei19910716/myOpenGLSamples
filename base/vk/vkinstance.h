@@ -1,6 +1,5 @@
 #pragma once
 
-#include "vulkan/vulkan.h"
 #include "base/utils.h"
 #include "vkobject.h"
 
@@ -34,6 +33,10 @@ public:
         instanceCreateInfo.ppEnabledExtensionNames = instanceExtensions.data();
 
         assert(vkCreateInstance(&instanceCreateInfo, nullptr, &handle) == VK_SUCCESS);
+    }
+
+    ~VKInstance(){
+        vkDestroyInstance(handle,nullptr);
     }
 
 private:

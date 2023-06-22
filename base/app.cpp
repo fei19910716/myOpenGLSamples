@@ -1,6 +1,4 @@
-
 #include "app.h"
-
 #include "base/utils.h"
 
 #ifndef _WIN32

@@ -20,7 +20,7 @@ public:
         // ------
         uint ImageIndex = 0;
         assert(vkAcquireNextImageKHR(m_device->Handle(), m_swapchain->Handle(), UINT64_MAX, NULL, NULL, &ImageIndex) == VK_SUCCESS);
-
+    
         VkSubmitInfo submitInfo = {};
         submitInfo.sType                = VK_STRUCTURE_TYPE_SUBMIT_INFO;
         submitInfo.commandBufferCount   = 1;
@@ -67,11 +67,11 @@ public:
     }
 
     ~VulkanExample(){
-        SAFE_DELETE(m_swapchain);
-        SAFE_DELETE(m_device);
+        SAFE_DELETE(m_instance);
         SAFE_DELETE(m_physicalDevice);
         SAFE_DELETE(m_surface);
-        SAFE_DELETE(m_instance);
+        SAFE_DELETE(m_device);
+        SAFE_DELETE(m_swapchain);
     }
 
     void CreateVulkanObjects(){
