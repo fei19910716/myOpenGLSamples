@@ -1,6 +1,5 @@
 #pragma once
 
-#include "vkinstance.h"
 #include "vkdevice.h"
 
 #include <cassert>

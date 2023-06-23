@@ -5,12 +5,16 @@
 #include "base/vk/vkdevice.h"
 #include "base/vk/vksurface.h"
 #include "base/vk/vkswapchain.h"
+#include "base/vk/vkvertexbuffer.h"
+#include "base/vk/vkindexbuffer.h"
+#include "base/vk/vkdescriptorset.h"
+#include "base/vk/vkgraphicspipeline.h"
 
 // settings
 const unsigned int SCR_WIDTH = 800;
 const unsigned int SCR_HEIGHT = 600;
 
-class BaseExample: public App, public ICallbacks{
+class VulkanExample: public App, public ICallbacks{
 public:
 
     void RenderSceneCB() override
@@ -20,7 +24,7 @@ public:
         // ------
         uint ImageIndex = 0;
         assert(vkAcquireNextImageKHR(m_device->Handle(), m_swapchain->Handle(), UINT64_MAX, NULL, NULL, &ImageIndex) == VK_SUCCESS);
-
+    
         VkSubmitInfo submitInfo = {};
         submitInfo.sType                = VK_STRUCTURE_TYPE_SUBMIT_INFO;
         submitInfo.commandBufferCount   = 1;
@@ -60,12 +64,18 @@ public:
         }
     }
 
-    virtual ~BaseExample(){
-        SAFE_DELETE(m_swapchain);
-        SAFE_DELETE(m_device);
+
+    VulkanExample(){
+        CreateVulkanObjects();
+        RecordCommandBuffers();
+    }
+
+    ~VulkanExample(){
+        SAFE_DELETE(m_instance);
         SAFE_DELETE(m_physicalDevice);
         SAFE_DELETE(m_surface);
-        SAFE_DELETE(m_instance);
+        SAFE_DELETE(m_device);
+        SAFE_DELETE(m_swapchain);
     }
 
     void CreateVulkanObjects(){
@@ -87,81 +97,16 @@ public:
         m_swapchain->CreateCommandBuffers();
         m_swapchain->CreateFences();
         DEV_INFO("create swapchain success!");
-    }
-
-    virtual void RecordCommandBuffers() = 0;
-
-protected:
-    VKInstance*         m_instance = nullptr;
-    VKSurface*          m_surface = nullptr;
-    VKPhysicalDevice*   m_physicalDevice = nullptr;
-    VKDevice*           m_device = nullptr;
-    VKSwapChain*        m_swapchain = nullptr;
-};
-
-class ClearColorWithoutRenderPass: public BaseExample{
-public:
-
-    ClearColorWithoutRenderPass(){
-        CreateVulkanObjects();
-        RecordCommandBuffers();
-    }
-
-    ~ClearColorWithoutRenderPass(){
-        BaseExample::~BaseExample();
-    }
-
-    
-    void RecordCommandBuffers() override {
-        VkCommandBufferBeginInfo beginInfo = {
-            .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,
-            .flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT
-        };
-        
-        VkClearColorValue clearColor = { 0.0f, 0.3f, 0.0f, 1.0f };
-        VkClearValue clearValue = {
-            .color = clearColor
-        };
-        
-        VkImageSubresourceRange imageRange = {
-            .aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
-            .levelCount = 1,
-            .layerCount = 1
-        };
-            
-        for (uint i = 0 ; i < m_swapchain->ImageCount() ; i++) {
-            auto commandBuffer = m_swapchain->CommandBuffer(i)->Handle();
-
-            vkBeginCommandBuffer(commandBuffer, &beginInfo);
-
-                vkCmdClearColorImage(commandBuffer, m_swapchain->Image(i)->Handle(), VK_IMAGE_LAYOUT_GENERAL, &clearColor, 1, &imageRange);
-
-            vkEndCommandBuffer(commandBuffer);
-        }
-        
-        DEV_INFO("Command buffers record success!");
-    }
-};
-
-class ClearColorWithRenderPass: public BaseExample{
-public:
-
-    ClearColorWithRenderPass(){
-        CreateVulkanObjects();
 
         CreateRenderpass();
         m_swapchain->CreateFrameBuffers(m_renderPass);
         DEV_INFO("create renderpass success!");
 
-        RecordCommandBuffers();
+        m_renderCompleteSemaphore  = new VKSemaphore(m_device);
+        m_presentCompleteSemaphore = new VKSemaphore(m_device);
+        DEV_INFO("create sync success!");
     }
 
-    ~ClearColorWithRenderPass(){
-        BaseExample::~BaseExample();
-        SAFE_DELETE(m_renderPass);
-    }
-
-    
     void CreateRenderpass(){
         VkAttachmentDescription attachment = {};
 
@@ -212,8 +157,52 @@ public:
 
 		m_renderPass = new VKRenderPass(m_device,{attachment},{subpassDescription},{dependency});
     }
+
+
+    void CreateVertexBuffer(){
+
+        struct Vertex {
+            float position[3];
+            float color[3];
+        };
+        // Setup vertices
+		std::vector<Vertex> vertexBuffer =
+		{
+			{ {  1.0f,  1.0f, 0.0f }, { 1.0f, 0.0f, 0.0f } },
+			{ { -1.0f,  1.0f, 0.0f }, { 0.0f, 1.0f, 0.0f } },
+			{ {  0.0f, -1.0f, 0.0f }, { 0.0f, 0.0f, 1.0f } }
+		};
+		uint32_t vertexBufferSize = static_cast<uint32_t>(vertexBuffer.size()) * sizeof(Vertex);
+        VKVertexBuffer* vbo = new VKVertexBuffer(m_device,vertexBufferSize);
+        vbo->StageLoadRaw(vertexBuffer.data(),vertexBufferSize);
+
+
+        // Setup indices
+		std::vector<uint32_t> indexBuffer = { 0, 1, 2 };
+		uint32_t indexBufferSize = indexBuffer.size() * sizeof(uint32_t);
+        VKIndexBuffer* ibo = new VKIndexBuffer(m_device,indexBufferSize);
+        ibo->StageLoadRaw(indexBuffer.data(),indexBufferSize);
+    }
+
+    void CreateDescriptorSet(){
+        // Binding 0: Uniform buffer (Vertex shader)
+		VkDescriptorSetLayoutBinding layoutBinding = {};
+		layoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+		layoutBinding.descriptorCount = 1;
+		layoutBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+		layoutBinding.pImmutableSamplers = nullptr;
+
+
+        VKDescriptorSetPool* setPool = new VKDescriptorSetPool(m_device,VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,1,1);
+        VKDescriptorSetLayout* setLayout = new VKDescriptorSetLayout(m_device, {layoutBinding});
+        VKPipelineLayout* pipelineLayout = new VKPipelineLayout(m_device, {setLayout});
+        VKDescriptorSet* descriptorSet = setPool->AllocateDescriptorSets({setLayout});
+        
+        VkDescriptorBufferInfo bufferInfo;
+        descriptorSet->Update(bufferInfo);
+    }
     
-    void RecordCommandBuffers() override {
+    void RecordCommandBuffers() {
         VkCommandBufferBeginInfo beginInfo = {
             .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,
             .flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT
@@ -257,7 +246,13 @@ public:
     }
 
 private:
-    VKRenderPass*  m_renderPass = nullptr;
+    VKInstance*         m_instance = nullptr;
+    VKSurface*          m_surface = nullptr;
+    VKPhysicalDevice*   m_physicalDevice = nullptr;
+    VKDevice*           m_device = nullptr;
+    VKSwapChain*        m_swapchain = nullptr;
+    VKSemaphore*        m_renderCompleteSemaphore = nullptr, *m_presentCompleteSemaphore = nullptr;
+    VKRenderPass*       m_renderPass = nullptr;
 };
 
 int main(int argc, char** argv)
@@ -265,8 +260,7 @@ int main(int argc, char** argv)
     BackendInit(argc,argv, API_TYPE_VK);
     BackendCreateWindow(SCR_WIDTH,SCR_HEIGHT,false/*isFullScreen*/,"Learn Vulkan");
 
-    // BackendRun(new ClearColorWithRenderPass);
-    BackendRun(new ClearColorWithoutRenderPass);
+    BackendRun(new VulkanExample);
 
     BackendTerminate();
     return 0;

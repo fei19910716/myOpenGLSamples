@@ -2,7 +2,6 @@
 
 #include "base/utils.h"
 #include "vkrenderpass.h"
-#include "vkswapchain.h"
 
 #include <vector>
 #include <cassert>

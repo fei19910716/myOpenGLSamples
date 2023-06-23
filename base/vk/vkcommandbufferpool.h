@@ -11,17 +11,10 @@
 
 class VKCommandBufferPool: public VKObject<VkCommandPool>{
 public:
-    VKCommandBufferPool(VKDevice* device): m_device(device)
-    {
-        
-        VkCommandPoolCreateInfo poolInfo{};
-        poolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
-        poolInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
-        poolInfo.queueFamilyIndex = device->PhysicalDevice()->GraphicsQueueFamily();
 
-        if (vkCreateCommandPool(m_device->Handle(), &poolInfo, nullptr, &handle) != VK_SUCCESS) {
-            throw std::runtime_error("failed to create command pool!");
-        }
+    static VKCommandBufferPool* Instance(VKDevice* device){
+        static VKCommandBufferPool pool(device);
+        return &pool;
     }
 
     ~VKCommandBufferPool(){
@@ -47,6 +40,19 @@ public:
         }
 
         return result;
+    }
+private:
+    VKCommandBufferPool(VKDevice* device): m_device(device)
+    {
+        
+        VkCommandPoolCreateInfo poolInfo{};
+        poolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
+        poolInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
+        poolInfo.queueFamilyIndex = device->PhysicalDevice()->GraphicsQueueFamily();
+
+        if (vkCreateCommandPool(m_device->Handle(), &poolInfo, nullptr, &handle) != VK_SUCCESS) {
+            throw std::runtime_error("failed to create command pool!");
+        }
     }
 
     VKDevice* m_device = nullptr;

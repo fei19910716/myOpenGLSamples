@@ -2,11 +2,33 @@
 
 #include "base/utils.h"
 #include "vkrenderpass.h"
-
+#include "vkdescriptorset.h"
 
 #include <vector>
 #include <cassert>
 #include <fstream>
+
+class VKPipelineLayout: public VKObject<VkPipelineLayout>{
+public:
+    VKPipelineLayout(VKDevice* device, const std::vector<VKDescriptorSetLayout*>& setLayouts){
+		
+		std::vector<VkDescriptorSetLayout> vkSetLayouts;
+
+		for(auto& setLayout: setLayouts){
+			vkSetLayouts.push_back(setLayout->Handle());
+		}
+		// Create the pipeline layout that is used to generate the rendering pipelines that are based on this descriptor set layout
+		// In a more complex scenario you would have different pipeline layouts for different descriptor set layouts that could be reused
+		VkPipelineLayoutCreateInfo pPipelineLayoutCreateInfo = {};
+		pPipelineLayoutCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
+		pPipelineLayoutCreateInfo.pNext = nullptr;
+		pPipelineLayoutCreateInfo.setLayoutCount = (uint32_t)vkSetLayouts.size();
+		pPipelineLayoutCreateInfo.pSetLayouts = vkSetLayouts.data();
+
+		vkCreatePipelineLayout(device->Handle(), &pPipelineLayoutCreateInfo, nullptr, &handle);
+    }
+};
+
 
 class VKGraphicsPipeline: public VKObject<VkPipeline>{
 
