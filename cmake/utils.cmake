@@ -19,14 +19,34 @@ endfunction()
 
 
 function(copy_shader target file)
+message(STATUS "copy_shader: ${file}")
 get_filename_component(file_name ${file} NAME)
 add_custom_command(TARGET ${target} POST_BUILD
 COMMAND
     ${CMAKE_COMMAND} -E copy_if_different ${file}  $<TARGET_FILE_DIR:${target}>/shaders/${file_name}
 COMMENT
-    "Custom command copy shader"
+    "Custom command copy_shader"
 )
 endfunction(copy_shader target file)
+
+
+function(compile_shader target file)
+message(STATUS "compile_shader: ${file}")
+
+set(GLSLANGVALIDATOR ${CMAKE_SOURCE_DIR}/tools/glslang/glslangValidator.exe)
+get_filename_component(file_name ${file} NAME_WE)
+get_filename_component(file_ext  ${file} EXT)
+
+add_custom_command(TARGET ${target} POST_BUILD
+COMMAND
+    ${GLSLANGVALIDATOR} -V ${file} -o ${file_name}${file_ext}.spv
+COMMAND
+    ${CMAKE_COMMAND} -E copy_if_different ${file_name}${file_ext}.spv  $<TARGET_FILE_DIR:${target}>/shaders/${file_name}${file_ext}.spv
+COMMENT
+    "Custom command compile_shader"
+)
+endfunction(compile_shader target file)
+
 
 
 function(copy_dll target file)
@@ -53,7 +73,6 @@ endfunction(copy_dll target file)
 
 
 function(add_target target dir)
-    
 message(STATUS "starting build: ${target}")
 
 file(GLOB src_files ${dir}/*.cpp)
@@ -61,22 +80,24 @@ add_executable(${target} ${src_files})
 
 target_link_libraries(${target} PUBLIC base)
 
-if(WIN32)
-target_compile_definitions(${target} PUBLIC VK_USE_PLATFORM_WIN32_KHR)
+string(FIND ${target} "vk" VK_INDEX)
+if(${VK_INDEX} GREATER 0)
+    if(WIN32)
+        target_compile_definitions(${target} PUBLIC VK_USE_PLATFORM_WIN32_KHR)
+    endif()
 endif()
 
 file(GLOB shader_files
-${dir}/*.vs
-${dir}/*.fs
-${dir}/*.tcs
-${dir}/*.tes
-${dir}/*.gs
-${dir}/*.cs
-${dir}/*.spv)
+${dir}/*.vert
+${dir}/*.frag)
 
 
 foreach(shader_file ${shader_files})
-    copy_shader(${target} ${shader_file})
+    if(${VK_INDEX} GREATER 0)
+        compile_shader(${target} ${shader_file})
+    else()
+        copy_shader(${target} ${shader_file})
+    endif()
 endforeach()
 
 endfunction(add_target dir)
