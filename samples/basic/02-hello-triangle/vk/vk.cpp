@@ -216,7 +216,6 @@ public:
 		m_renderPass = new VKRenderPass(m_device,{attachment},{subpassDescription},{dependency});
     }
 
-
     void CreateVertexBuffer(){
 
         const std::vector<Vertex> vertices = {
@@ -245,7 +244,7 @@ public:
 
             return shaderModule;
         };
-        
+
         auto vertShaderCode = UTILS::ReadShaderFile("shaders/shader.vert.spv");
         auto fragShaderCode = UTILS::ReadShaderFile("shaders/shader.frag.spv");
 
