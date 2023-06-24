@@ -77,35 +77,24 @@ public:
 
         m_imageFormat   = surfaceFormat.format;
         m_extent        = extent;
+
+        CreateImages();
     }
 
     ~VKSwapChain(){
-        vkDestroySwapchainKHR(m_device->Handle(),handle,nullptr);
+        for(auto imageView: m_imageViews){
+            SAFE_DELETE(imageView);
+        }
 
         for(auto image: m_images){
             SAFE_DELETE(image);
         }
 
-        for(auto imageView: m_imageViews){
-            SAFE_DELETE(imageView);
-        }
-
         for(auto buffer: m_commandBuffers){
             SAFE_DELETE(buffer);
         }
-    }
 
-    void CreateImages()
-    {
-        uint32_t imageCount = 0;
-        vkGetSwapchainImagesKHR(m_device->Handle(), handle, &imageCount, nullptr);
-
-        std::vector<VkImage> images(imageCount);
-        vkGetSwapchainImagesKHR(m_device->Handle(), handle, &imageCount, images.data());
-
-        for(auto image: images){
-            m_images.push_back(new VKImage(m_device, image));
-        }
+        vkDestroySwapchainKHR(m_device->Handle(),handle,nullptr);
     }
 
     void CreateImageViews()
@@ -124,15 +113,6 @@ public:
 
         VKCommandBufferPool* pool = VKCommandBufferPool::Instance(m_device);
         m_commandBuffers = pool->AllocateCommandBuffers(imageCount);
-    }
-
-    void CreateFences()
-    {
-        uint32_t imageCount = (uint32_t)m_images.size();
-
-        for(uint32_t i = 0; i < imageCount; i++){
-            m_fences.push_back(new VKFence(m_device));
-        }
     }
 
     void CreateFrameBuffers(VKRenderPass* renderPass){
@@ -156,11 +136,6 @@ public:
     const VKFrameBuffer* FrameBuffer(int index) const{
         assert(index < m_frameBuffers.size());
         return m_frameBuffers[index];
-    }
-
-    const VKFence* Fence(int index) const{
-        assert(index < m_fences.size());
-        return m_fences[index];
     }
 
     const VKCommandBuffer* CommandBuffer(int index) const{
@@ -243,10 +218,22 @@ private:
         return details;
     }
 
+    void CreateImages()
+    {
+        uint32_t imageCount = 0;
+        vkGetSwapchainImagesKHR(m_device->Handle(), handle, &imageCount, nullptr);
+
+        std::vector<VkImage> images(imageCount);
+        vkGetSwapchainImagesKHR(m_device->Handle(), handle, &imageCount, images.data());
+
+        for(auto image: images){
+            m_images.push_back(new VKImage(m_device, image));
+        }
+    }
+
     std::vector<VKImage*>         m_images;
     std::vector<VKImageView*>     m_imageViews;
     std::vector<VKCommandBuffer*> m_commandBuffers;
-    std::vector<VKFence*>         m_fences;
     std::vector<VKFrameBuffer*>   m_frameBuffers;
 
     VkFormat                    m_imageFormat;

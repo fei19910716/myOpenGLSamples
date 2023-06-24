@@ -7,6 +7,7 @@
 
 #include <stdio.h>
 #include <string>
+#include <vector>
 
 #include "base/types.h"
 #include "base/log_system.h"
@@ -31,8 +32,8 @@ bool        ReadFile(const char* fileName, std::string& outFile);
 long long   GetCurrentTimeMillis();
 void        DevError(const char* pFileName, uint line, const char* msg, ... );
 void        DevInfo (const char* pFileName, uint line, const char* msg, ... );
+std::vector<char> ReadShaderFile(const std::string& filename);
 }
-
 #define DEV_ERROR(msg, ...)         UTILS::DevError(__FILE__, __LINE__, msg, __VA_ARGS__)
 #define DEV_INFO(msg, ...)          UTILS::DevInfo (__FILE__, __LINE__, msg, __VA_ARGS__)
 #define ZERO_MEM(a)                 memset(a, 0, sizeof(a))

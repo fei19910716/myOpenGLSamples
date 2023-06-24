@@ -82,10 +82,8 @@ public:
         DEV_INFO("create device success!");
 
         m_swapchain = new VKSwapChain(m_device,m_surface,SCR_WIDTH,SCR_HEIGHT);
-        m_swapchain->CreateImages();
         m_swapchain->CreateImageViews();
         m_swapchain->CreateCommandBuffers();
-        m_swapchain->CreateFences();
         DEV_INFO("create swapchain success!");
     }
 

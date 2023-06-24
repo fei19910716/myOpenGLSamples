@@ -6,8 +6,10 @@
 #include "base/vk/vksurface.h"
 #include "base/vk/vkswapchain.h"
 #include "base/vk/vkvertexbuffer.h"
-#include "base/vk/vkindexbuffer.h"
 #include "base/vk/vkgraphicspipeline.h"
+#include "base/math.h"
+
+
 
 // settings
 const unsigned int SCR_WIDTH = 800;
@@ -16,26 +18,74 @@ const unsigned int SCR_HEIGHT = 600;
 class VulkanExample: public App, public ICallbacks{
 public:
 
+    struct Vertex {
+        glm::vec2 pos;
+        glm::vec3 color;
+
+        static VkVertexInputBindingDescription getBindingDescription() {
+            VkVertexInputBindingDescription bindingDescription{};
+            bindingDescription.binding = 0;
+            bindingDescription.stride = sizeof(Vertex);
+            bindingDescription.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
+
+            return bindingDescription;
+        }
+
+        static std::vector<VkVertexInputAttributeDescription> getAttributeDescriptions() {
+            std::vector<VkVertexInputAttributeDescription> attributeDescriptions(2);
+
+            attributeDescriptions[0].binding = 0;
+            attributeDescriptions[0].location = 0;
+            attributeDescriptions[0].format = VK_FORMAT_R32G32_SFLOAT;
+            attributeDescriptions[0].offset = offsetof(Vertex, pos);
+
+            attributeDescriptions[1].binding = 0;
+            attributeDescriptions[1].location = 1;
+            attributeDescriptions[1].format = VK_FORMAT_R32G32B32_SFLOAT;
+            attributeDescriptions[1].offset = offsetof(Vertex, color);
+
+            return attributeDescriptions;
+        }
+    };
+
     void RenderSceneCB() override
     {
-        
-        // render
-        // ------
-        uint ImageIndex = 0;
-        assert(vkAcquireNextImageKHR(m_device->Handle(), m_swapchain->Handle(), UINT64_MAX, NULL, NULL, &ImageIndex) == VK_SUCCESS);
-    
-        VkSubmitInfo submitInfo = {};
-        submitInfo.sType                = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-        submitInfo.commandBufferCount   = 1;
-        submitInfo.pCommandBuffers      = m_swapchain->CommandBuffer(ImageIndex)->pHandle();
-        assert(vkQueueSubmit(m_device->m_graphicsQueue, 1, &submitInfo, NULL) == VK_SUCCESS);    
-        
-        VkPresentInfoKHR presentInfo = {};
-        presentInfo.sType              = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
-        presentInfo.swapchainCount     = 1;
-        presentInfo.pSwapchains        = m_swapchain->pHandle();
-        presentInfo.pImageIndices      = &ImageIndex;
-        assert(vkQueuePresentKHR(m_device->m_presentQueue, &presentInfo) == VK_SUCCESS);  
+        vkWaitForFences(m_device->Handle(), 1, m_fence->pHandle(), VK_TRUE, UINT64_MAX);
+
+        uint32_t imageIndex;
+        vkAcquireNextImageKHR(m_device->Handle(), m_swapchain->Handle(), UINT64_MAX, m_imageAvailable->Handle(), VK_NULL_HANDLE, &imageIndex);
+
+        VkSubmitInfo submitInfo{};
+        submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+
+        VkSemaphore waitSemaphores[] = {m_imageAvailable->Handle()};
+        VkPipelineStageFlags waitStages[] = {VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT};
+        submitInfo.waitSemaphoreCount = 1;
+        submitInfo.pWaitSemaphores = waitSemaphores;
+        submitInfo.pWaitDstStageMask = waitStages;
+
+        submitInfo.commandBufferCount = 1;
+        submitInfo.pCommandBuffers = m_swapchain->CommandBuffer(imageIndex)->pHandle();
+
+        VkSemaphore signalSemaphores[] = {m_renderFinish->Handle()};
+        submitInfo.signalSemaphoreCount = 1;
+        submitInfo.pSignalSemaphores = signalSemaphores;
+
+        vkQueueSubmit(m_device->m_graphicsQueue, 1, &submitInfo, m_fence->Handle());
+
+        VkPresentInfoKHR presentInfo{};
+        presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
+
+        presentInfo.waitSemaphoreCount = 1;
+        presentInfo.pWaitSemaphores = signalSemaphores;
+
+        VkSwapchainKHR swapChains[] = {m_swapchain->Handle()};
+        presentInfo.swapchainCount = 1;
+        presentInfo.pSwapchains = swapChains;
+
+        presentInfo.pImageIndices = &imageIndex;
+
+        vkQueuePresentKHR(m_device->m_presentQueue, &presentInfo);
 
         BackendSwapBuffers();
     }
@@ -44,10 +94,15 @@ public:
     {
         // glViewport(0, 0, width, height);
 
-        // SAFE_DELETE(m_swapchain);
+        vkDeviceWaitIdle(m_device->Handle());
 
-        // m_swapchain = new VKSwapChain(m_device, m_surface, width, height);
-        // DEV_INFO("create swapchain success!");
+        SAFE_DELETE(m_swapchain);
+        m_swapchain = new VKSwapChain(m_device,m_surface,width,height);
+        m_swapchain->CreateImageViews();
+        m_swapchain->CreateFrameBuffers(m_renderPass);
+        m_swapchain->CreateCommandBuffers();
+
+        RecordCommandBuffers();
     }
 
     void KeyboardCB(KEY Key, KEY_STATE KeyState = KEY_STATE_PRESS) override
@@ -90,23 +145,20 @@ public:
         m_device = new VKDevice(m_physicalDevice);
         DEV_INFO("create device success!");
 
-        m_renderCompleteSemaphore  = new VKSemaphore(m_device);
-        m_presentCompleteSemaphore = new VKSemaphore(m_device);
-        DEV_INFO("create sync success!");
+        m_fence = new VKFence(m_device);
+        m_imageAvailable = new VKSemaphore(m_device);
+        m_renderFinish = new VKSemaphore(m_device);
 
         m_swapchain = new VKSwapChain(m_device,m_surface,SCR_WIDTH,SCR_HEIGHT);
-        m_swapchain->CreateImages();
         m_swapchain->CreateImageViews();
         m_swapchain->CreateCommandBuffers();
-        m_swapchain->CreateFences();
         DEV_INFO("create swapchain success!");
-
 
         CreateRenderpass();
         m_swapchain->CreateFrameBuffers(m_renderPass);
         DEV_INFO("create renderpass success!");
 
-        // CreateVertexBuffer();
+        CreateVertexBuffer();
         DEV_INFO("create vertexbuffer success!");
 
         CreateGraphicsPipeline();
@@ -167,64 +219,35 @@ public:
 
     void CreateVertexBuffer(){
 
-        struct Vertex {
-            float position[3];
-            float color[3];
+        const std::vector<Vertex> vertices = {
+            {{0.0f, -0.5f}, {1.0f, 0.0f, 0.0f}},
+            {{0.5f, 0.5f}, {0.0f, 1.0f, 0.0f}},
+            {{-0.5f, 0.5f}, {0.0f, 0.0f, 1.0f}}
         };
-        // Setup vertices
-		std::vector<Vertex> vertexBuffer =
-		{
-			{ {  1.0f,  1.0f, 0.0f }, { 1.0f, 0.0f, 0.0f } },
-			{ { -1.0f,  1.0f, 0.0f }, { 0.0f, 1.0f, 0.0f } },
-			{ {  0.0f, -1.0f, 0.0f }, { 0.0f, 0.0f, 1.0f } }
-		};
-		uint32_t vertexBufferSize = static_cast<uint32_t>(vertexBuffer.size()) * sizeof(Vertex);
-        VKVertexBuffer* vbo = new VKVertexBuffer(m_device,vertexBufferSize, (uint32_t)vertexBuffer.size());
-        vbo->StageLoadRaw(vertexBuffer.data(),vertexBufferSize);
 
-
-        // Setup indices
-		// std::vector<uint32_t> indexBuffer = { 0, 1, 2 };
-		// uint32_t indexBufferSize = (uint32_t)indexBuffer.size() * sizeof(uint32_t);
-        // VKIndexBuffer* ibo = new VKIndexBuffer(m_device,indexBufferSize);
-        // ibo->StageLoadRaw(indexBuffer.data(),indexBufferSize);
-    }
-
-    VkShaderModule createShaderModule(const std::vector<char>& code) {
-        VkShaderModuleCreateInfo createInfo{};
-        createInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
-        createInfo.codeSize = code.size();
-        createInfo.pCode = reinterpret_cast<const uint32_t*>(code.data());
-
-        VkShaderModule shaderModule;
-        if (vkCreateShaderModule(m_device->Handle(), &createInfo, nullptr, &shaderModule) != VK_SUCCESS) {
-            throw std::runtime_error("failed to create shader module!");
-        }
-
-        return shaderModule;
-    }
-
-    static std::vector<char> readFile(const std::string& filename) {
-        std::ifstream file(filename, std::ios::ate | std::ios::binary);
-
-        if (!file.is_open()) {
-            throw std::runtime_error("failed to open file!");
-        }
-
-        size_t fileSize = (size_t) file.tellg();
-        std::vector<char> buffer(fileSize);
-
-        file.seekg(0);
-        file.read(buffer.data(), fileSize);
-
-        file.close();
-
-        return buffer;
+		uint32_t vertexBufferSize = static_cast<uint32_t>(vertices.size()) * sizeof(Vertex);
+        m_VBO = new VKVertexBuffer(m_device,vertexBufferSize, (uint32_t)vertices.size());
+        m_VBO->StageLoadRaw(vertices.data(),vertexBufferSize);
     }
 
     void CreateGraphicsPipeline(){
-        auto vertShaderCode = readFile("shaders/shader.vert.spv");
-        auto fragShaderCode = readFile("shaders/shader.frag.spv");
+
+        auto createShaderModule = [&](const std::vector<char>& code){
+            VkShaderModuleCreateInfo createInfo{};
+            createInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
+            createInfo.codeSize = code.size();
+            createInfo.pCode = reinterpret_cast<const uint32_t*>(code.data());
+
+            VkShaderModule shaderModule;
+            if (vkCreateShaderModule(m_device->Handle(), &createInfo, nullptr, &shaderModule) != VK_SUCCESS) {
+                throw std::runtime_error("failed to create shader module!");
+            }
+
+            return shaderModule;
+        };
+        
+        auto vertShaderCode = UTILS::ReadShaderFile("shaders/shader.vert.spv");
+        auto fragShaderCode = UTILS::ReadShaderFile("shaders/shader.frag.spv");
 
         VkShaderModule vertShaderModule = createShaderModule(vertShaderCode);
         VkShaderModule fragShaderModule = createShaderModule(fragShaderCode);
@@ -245,8 +268,14 @@ public:
 
         VkPipelineVertexInputStateCreateInfo vertexInputInfo{};
         vertexInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
-        vertexInputInfo.vertexBindingDescriptionCount = 0;
-        vertexInputInfo.vertexAttributeDescriptionCount = 0;
+
+        auto bindingDescription = Vertex::getBindingDescription();
+        auto attributeDescriptions = Vertex::getAttributeDescriptions();
+
+        vertexInputInfo.vertexBindingDescriptionCount = 1;
+        vertexInputInfo.vertexAttributeDescriptionCount = static_cast<uint32_t>(attributeDescriptions.size());
+        vertexInputInfo.pVertexBindingDescriptions = &bindingDescription;
+        vertexInputInfo.pVertexAttributeDescriptions = attributeDescriptions.data();
 
         VkPipelineInputAssemblyStateCreateInfo inputAssembly{};
         inputAssembly.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
@@ -302,9 +331,11 @@ public:
         pipelineLayoutInfo.setLayoutCount = 0;
         pipelineLayoutInfo.pushConstantRangeCount = 0;
 
+        VkPipelineLayout pipelineLayout;
         if (vkCreatePipelineLayout(m_device->Handle(), &pipelineLayoutInfo, nullptr, &pipelineLayout) != VK_SUCCESS) {
             throw std::runtime_error("failed to create pipeline layout!");
         }
+        m_pipelineLayout = new VKPipelineLayout(m_device, pipelineLayout);
 
         VkGraphicsPipelineCreateInfo pipelineInfo{};
         pipelineInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
@@ -322,15 +353,16 @@ public:
         pipelineInfo.subpass = 0;
         pipelineInfo.basePipelineHandle = VK_NULL_HANDLE;
 
+        VkPipeline graphicsPipeline;
         if (vkCreateGraphicsPipelines(m_device->Handle(), VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &graphicsPipeline) != VK_SUCCESS) {
             throw std::runtime_error("failed to create graphics pipeline!");
         }
+        m_pipeline = new VKGraphicsPipeline(m_device, graphicsPipeline);
 
         vkDestroyShaderModule(m_device->Handle(), fragShaderModule, nullptr);
         vkDestroyShaderModule(m_device->Handle(), vertShaderModule, nullptr);
     }
-    VkPipelineLayout pipelineLayout;
-    VkPipeline graphicsPipeline;
+
     void RecordCommandBuffers() {
         VkCommandBufferBeginInfo beginInfo = {
             .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,
@@ -381,13 +413,13 @@ public:
 
                     // Bind the rendering pipeline
                     // The pipeline (state object) contains all states of the rendering pipeline, binding it will set all the states specified at pipeline creation time
-                    vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipeline);
+                    vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_pipeline->Handle());
 
-                    // Bind triangle vertex buffer (contains position and colors)
-                    // VkDeviceSize offset = 0;
-                    // vkCmdBindVertexBuffers(commandBuffer, 0, 1, m_VBO->pHandle(), &offset);
-                    
-                    vkCmdDraw(commandBuffer, 3, 1, 0, 0);
+                    VkBuffer vertexBuffers[] = {m_VBO->Handle()};
+                    VkDeviceSize offsets[] = {0};
+                    vkCmdBindVertexBuffers(commandBuffer, 0, 1, vertexBuffers, offsets);
+
+                    vkCmdDraw(commandBuffer, m_VBO->m_vertexCount, 1, 0, 0);
 
                 vkCmdEndRenderPass(commandBuffer);
             vkEndCommandBuffer(commandBuffer);
@@ -401,11 +433,13 @@ private:
     VKSurface*          m_surface = nullptr;
     VKPhysicalDevice*   m_physicalDevice = nullptr;
     VKDevice*           m_device = nullptr;
-    VKSemaphore*        m_renderCompleteSemaphore = nullptr, *m_presentCompleteSemaphore = nullptr;
     VKRenderPass*       m_renderPass = nullptr;
     VKSwapChain*        m_swapchain = nullptr;
     VKGraphicsPipeline* m_pipeline = nullptr;
+    VKPipelineLayout*   m_pipelineLayout = nullptr;
     VKVertexBuffer*     m_VBO = nullptr;
+    VKFence*            m_fence;
+    VKSemaphore*        m_imageAvailable = nullptr, *m_renderFinish = nullptr;
 };
 
 int main(int argc, char** argv)
