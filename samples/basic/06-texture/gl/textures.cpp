@@ -1,13 +1,13 @@
-#include <glad/glad.h>
-#include <GLFW/glfw3.h>
 
 #include "base/app.h"
-#include "base/technique.h"
+#include "base/gl/gltechnique.h"
+#include "base/gl/gltexture.h"
 #include "base/vertices.h"
 
 // settings
 const unsigned int SCR_WIDTH = 800;
 const unsigned int SCR_HEIGHT = 600;
+
 
 class SampleApp: public App, public ICallbacks{
 
@@ -20,11 +20,12 @@ public:
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
 
-
-        // render the triangle
+        
+        // render container
         shaderProgram->Enable();
+        texture->Bind(GL_TEXTURE0);
         glBindVertexArray(VAO);
-        glDrawArrays(GL_TRIANGLES, 0, 3);
+        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 
         BackendSwapBuffers();
     }
@@ -51,6 +52,7 @@ public:
     SampleApp()
     {
         CreateShader();
+        CreateTexture();
         CreateVertexBuffer();
     }
 
@@ -66,38 +68,46 @@ public:
 private:
 
     void CreateShader(){
-        shaderProgram = new Technique("shaders/3.3.shader.vs","shaders/3.3.shader.fs");
+        shaderProgram = new GLTechnique("shaders/4.1.texture.vert","shaders/4.1.texture.frag");
+    }
+
+    void CreateTexture(){
+        texture = new GLTexture(GL_TEXTURE_2D,UTILS::getAsset("textures/container.jpg"));
     }
 
 
     void CreateVertexBuffer(){
+        // set up vertex data (and buffer(s)) and configure vertex attributes
+        // ------------------------------------------------------------------
 
         glGenVertexArrays(1, &VAO);
         glGenBuffers(1, &VBO);
-        // bind the Vertex Array Object first, then bind and set vertex buffer(s), and then configure vertex attributes(s).
+        glGenBuffers(1, &EBO);
+
         glBindVertexArray(VAO);
 
         glBindBuffer(GL_ARRAY_BUFFER, VBO);
-        glBufferData(GL_ARRAY_BUFFER, sizeof(Model::TrianglePosColVertices), Model::TrianglePosColVertices, GL_STATIC_DRAW);
+        glBufferData(GL_ARRAY_BUFFER, sizeof(MODEL::QuadPosColTexVertices), MODEL::QuadPosColTexVertices, GL_STATIC_DRAW);
+
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(MODEL::QuadIndices), MODEL::QuadIndices, GL_STATIC_DRAW);
 
         // position attribute
-        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
         glEnableVertexAttribArray(0);
         // color attribute
-        glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
+        glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
         glEnableVertexAttribArray(1);
-
-        // You can unbind the VAO afterwards so other VAO calls won't accidentally modify this VAO, but this rarely happens. Modifying other
-        // VAOs requires a call to glBindVertexArray anyways so we generally don't unbind VAOs (nor VBOs) when it's not directly necessary.
-        // glBindVertexArray(0);
+        // texture coord attribute
+        glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
+        glEnableVertexAttribArray(2);
     }
 
-    unsigned int VAO,VBO;
-    Technique* shaderProgram = nullptr;
+    unsigned int VAO,VBO,EBO;
+    GLTechnique* shaderProgram = nullptr;
+    GLTexture* texture = nullptr;
 
 };
-
-
 
 int main(int argc, char** argv)
 {
@@ -107,5 +117,6 @@ int main(int argc, char** argv)
     BackendRun(new SampleApp);
 
     BackendTerminate();
+
     return 0;
 }
