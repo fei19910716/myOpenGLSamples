@@ -86,12 +86,9 @@ public:
             SAFE_DELETE(imageView);
         }
 
-        for(auto image: m_images){
-            SAFE_DELETE(image);
-        }
-
         for(auto buffer: m_commandBuffers){
-            SAFE_DELETE(buffer);
+            VKCommandBufferPool* pool = VKCommandBufferPool::Instance(m_device);
+            pool->FreeCommandBuffer(buffer);
         }
 
         vkDestroySwapchainKHR(m_device->Handle(),handle,nullptr);

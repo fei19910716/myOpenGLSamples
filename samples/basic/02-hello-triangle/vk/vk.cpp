@@ -15,10 +15,7 @@
 const unsigned int SCR_WIDTH = 800;
 const unsigned int SCR_HEIGHT = 600;
 
-class VulkanExample: public App, public ICallbacks{
-public:
-
-    struct Vertex {
+struct Vertex {
         glm::vec2 pos;
         glm::vec3 color;
 
@@ -48,6 +45,10 @@ public:
         }
     };
 
+class VulkanExample: public App, public ICallbacks{
+public:
+
+
     void RenderSceneCB() override
     {
         vkWaitForFences(m_device->Handle(), 1, m_fence->pHandle(), VK_TRUE, UINT64_MAX);
@@ -58,18 +59,16 @@ public:
         VkSubmitInfo submitInfo{};
         submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
 
-        VkSemaphore waitSemaphores[] = {m_imageAvailable->Handle()};
         VkPipelineStageFlags waitStages[] = {VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT};
         submitInfo.waitSemaphoreCount = 1;
-        submitInfo.pWaitSemaphores = waitSemaphores;
+        submitInfo.pWaitSemaphores = m_imageAvailable->pHandle();
         submitInfo.pWaitDstStageMask = waitStages;
 
         submitInfo.commandBufferCount = 1;
         submitInfo.pCommandBuffers = m_swapchain->CommandBuffer(imageIndex)->pHandle();
 
-        VkSemaphore signalSemaphores[] = {m_renderFinish->Handle()};
         submitInfo.signalSemaphoreCount = 1;
-        submitInfo.pSignalSemaphores = signalSemaphores;
+        submitInfo.pSignalSemaphores = m_renderFinish->pHandle();
 
         vkQueueSubmit(m_device->m_graphicsQueue, 1, &submitInfo, m_fence->Handle());
 
@@ -77,7 +76,7 @@ public:
         presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
 
         presentInfo.waitSemaphoreCount = 1;
-        presentInfo.pWaitSemaphores = signalSemaphores;
+        presentInfo.pWaitSemaphores = m_renderFinish->pHandle();
 
         VkSwapchainKHR swapChains[] = {m_swapchain->Handle()};
         presentInfo.swapchainCount = 1;
@@ -334,7 +333,6 @@ public:
         if (vkCreatePipelineLayout(m_device->Handle(), &pipelineLayoutInfo, nullptr, &pipelineLayout) != VK_SUCCESS) {
             throw std::runtime_error("failed to create pipeline layout!");
         }
-        m_pipelineLayout = new VKPipelineLayout(m_device, pipelineLayout);
 
         VkGraphicsPipelineCreateInfo pipelineInfo{};
         pipelineInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
@@ -435,7 +433,6 @@ private:
     VKRenderPass*       m_renderPass = nullptr;
     VKSwapChain*        m_swapchain = nullptr;
     VKGraphicsPipeline* m_pipeline = nullptr;
-    VKPipelineLayout*   m_pipelineLayout = nullptr;
     VKVertexBuffer*     m_VBO = nullptr;
     VKFence*            m_fence;
     VKSemaphore*        m_imageAvailable = nullptr, *m_renderFinish = nullptr;

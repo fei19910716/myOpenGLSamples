@@ -50,6 +50,11 @@ public:
 		// Bind memory to buffer
 		(vkBindBufferMemory(device->Handle(), handle, m_memory, 0));
 	}
+
+	~VKBuffer(){
+		vkDestroyBuffer(m_device->Handle(), handle, nullptr);
+        vkFreeMemory(m_device->Handle(), m_memory, nullptr);
+	}
 	
     void StageLoadRaw(const void* data, VkDeviceSize dataSize)
 	{

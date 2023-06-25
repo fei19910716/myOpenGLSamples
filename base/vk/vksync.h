@@ -17,6 +17,10 @@ public:
 		vkCreateSemaphore(m_device->Handle(), &semaphoreCreateInfo, nullptr, &handle);
     }
 
+    ~VKSemaphore(){
+        vkDestroySemaphore(m_device->Handle(), handle, nullptr);
+    }
+
     VKDevice* m_device = nullptr;
 };
 
@@ -32,6 +36,10 @@ public:
 		fenceCreateInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
 		
         vkCreateFence(m_device->Handle(), &fenceCreateInfo, nullptr, &handle);
+    }
+
+    ~VKFence(){
+        vkDestroyFence(m_device->Handle(), handle, nullptr);
     }
 
     VKDevice* m_device = nullptr;

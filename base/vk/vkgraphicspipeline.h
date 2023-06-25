@@ -12,7 +12,7 @@
 class VKPipelineLayout: public VKObject<VkPipelineLayout>{
 public:
 	~VKPipelineLayout(){
-        // vkDestroyImage(m_device->Handle(),handle,nullptr);
+        vkDestroyPipelineLayout(m_device->Handle(), handle, nullptr);
     }
 
     VKPipelineLayout(VKDevice* device, const VkPipelineLayout& image): m_device(device)
@@ -28,7 +28,7 @@ class VKGraphicsPipeline: public VKObject<VkPipeline>{
 
 public:
 	~VKGraphicsPipeline(){
-        // vkDestroyImage(m_device->Handle(),handle,nullptr);
+        vkDestroyPipeline(m_device->Handle(), handle, nullptr);
     }
 
     VKGraphicsPipeline(VKDevice* device, const VkPipeline& image): m_device(device)

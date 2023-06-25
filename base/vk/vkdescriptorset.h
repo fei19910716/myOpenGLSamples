@@ -11,10 +11,6 @@ class VKDescriptorSetLayout: public VKObject<VkDescriptorSetLayout>{
 public:
     VKDescriptorSetLayout(VKDevice* device, const std::vector<VkDescriptorSetLayoutBinding>& layoutBindings)
     {
-        // Setup layout of descriptors used in this example
-		// Basically connects the different shader stages to descriptors for binding uniform buffers, image samplers, etc.
-		// So every shader binding should map to one descriptor set layout binding
-
 		VkDescriptorSetLayoutCreateInfo descriptorLayout = {};
 		descriptorLayout.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
 		descriptorLayout.pNext = nullptr;

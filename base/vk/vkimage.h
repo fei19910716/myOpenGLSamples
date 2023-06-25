@@ -14,7 +14,7 @@
 class VKImage : public VKObject<VkImage>{
 public:
     ~VKImage(){
-        // vkDestroyImage(m_device->Handle(),handle,nullptr);
+        vkDestroyImage(m_device->Handle(),handle,nullptr);
     }
 
     VKImage(VKDevice* device, const VkImage& image): m_device(device)

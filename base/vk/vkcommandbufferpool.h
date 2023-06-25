@@ -21,8 +21,12 @@ public:
         vkDestroyCommandPool(m_device->Handle(),handle,nullptr);
     }
 
-    std::vector<VKCommandBuffer*> AllocateCommandBuffers(uint32_t count){
+    void FreeCommandBuffer(VKCommandBuffer* buffer){
+        vkFreeCommandBuffers(m_device->Handle(), handle, 1, buffer->pHandle());
+    }
 
+    std::vector<VKCommandBuffer*> AllocateCommandBuffers(uint32_t count)
+    {
         VkCommandBufferAllocateInfo allocInfo{};
         allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
         allocInfo.commandPool = handle;
