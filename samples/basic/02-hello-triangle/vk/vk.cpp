@@ -225,7 +225,7 @@ public:
 
 		uint32_t vertexBufferSize = static_cast<uint32_t>(vertices.size()) * sizeof(Vertex);
         m_VBO = new VKVertexBuffer(m_device,vertexBufferSize, (uint32_t)vertices.size());
-        m_VBO->StageLoadRaw(vertices.data(),vertexBufferSize);
+        m_VBO->StageLoadRaw(vertices.data());
     }
 
     void CreateGraphicsPipeline(){

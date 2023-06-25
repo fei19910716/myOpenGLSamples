@@ -30,7 +30,7 @@ public:
 		allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
 
 		bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-		bufferInfo.size = size;
+		bufferInfo.size = m_requestSize = size;
 		// This buffer will be used as a uniform buffer
 		bufferInfo.usage = m_usageFlags;
 
@@ -56,7 +56,7 @@ public:
         vkFreeMemory(m_device->Handle(), m_memory, nullptr);
 	}
 	
-    void StageLoadRaw(const void* data, VkDeviceSize dataSize)
+    void StageLoadRaw(const void* data)
 	{
         // Static data like vertex and index buffer should be stored on the device memory
 		// for optimal (and fastest) access by the GPU
@@ -69,9 +69,9 @@ public:
 		// - Delete the host visible (staging) buffer
 		// - Use the device local buffers for rendering
 
-		VKBuffer* stageBuffer = new VKBuffer(m_device, dataSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, 
+		VKBuffer* stageBuffer = new VKBuffer(m_device, m_requestSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, 
 												VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
-		stageBuffer->MapLoadRaw(data, dataSize);
+		stageBuffer->MapLoadRaw(data);
 
 		assert((m_usageFlags  & VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT)  == 0);
 		assert((~m_usageFlags  & VK_BUFFER_USAGE_TRANSFER_DST_BIT)  == 0);
@@ -85,7 +85,7 @@ public:
 
 		// Put buffer region copies into command buffer
 		VkBufferCopy copyRegion = {
-			.size = dataSize
+			.size = m_requestSize
 		};
 
 		VkCommandBufferBeginInfo beginInfo = {
@@ -102,13 +102,13 @@ public:
 		FlushCommandBuffer(commandBuffer);
     }
 
-	void MapLoadRaw(const void* bufferData, VkDeviceSize dataSize){
+	void MapLoadRaw(const void* bufferData){
 		// VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT
 		assert((~m_memoryFlags & VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT) == 0);
 
 		void *data;
 		vkMapMemory(m_device->Handle(), m_memory, 0, m_allocationSize, 0, &data);
-		memcpy(data, bufferData, dataSize);
+		memcpy(data, bufferData, m_requestSize);
 		vkUnmapMemory(m_device->Handle(), m_memory);
 	}
 
@@ -168,5 +168,6 @@ public:
     VkDeviceMemory m_memory;
     VkFlags m_usageFlags;
 	VkFlags m_memoryFlags;
+	VkDeviceSize m_requestSize;
 	VkDeviceSize m_allocationSize;
 };

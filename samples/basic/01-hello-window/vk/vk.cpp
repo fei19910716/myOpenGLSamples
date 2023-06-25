@@ -37,16 +37,6 @@ public:
         BackendSwapBuffers();
     }
 
-    void FramebufferSizeCB(int width, int height) override
-    {
-        // glViewport(0, 0, width, height);
-
-        // SAFE_DELETE(m_swapchain);
-
-        // m_swapchain = new VKSwapChain(m_device, m_surface, width, height);
-        // DEV_INFO("create swapchain success!");
-    }
-
     void KeyboardCB(KEY Key, KEY_STATE KeyState = KEY_STATE_PRESS) override
     {
         switch (Key)
@@ -100,6 +90,20 @@ protected:
 class ClearColorWithoutRenderPass: public BaseExample{
 public:
 
+    void FramebufferSizeCB(int width, int height) override
+    {
+        // glViewport(0, 0, width, height);
+
+        vkDeviceWaitIdle(m_device->Handle());
+
+        SAFE_DELETE(m_swapchain);
+        m_swapchain = new VKSwapChain(m_device,m_surface,width,height);
+        m_swapchain->CreateImageViews();
+        m_swapchain->CreateCommandBuffers();
+
+        RecordCommandBuffers();
+    }
+
     ClearColorWithoutRenderPass(){
         CreateVulkanObjects();
         RecordCommandBuffers();
@@ -143,6 +147,21 @@ public:
 
 class ClearColorWithRenderPass: public BaseExample{
 public:
+
+    void FramebufferSizeCB(int width, int height) override
+    {
+        // glViewport(0, 0, width, height);
+
+        vkDeviceWaitIdle(m_device->Handle());
+
+        SAFE_DELETE(m_swapchain);
+        m_swapchain = new VKSwapChain(m_device,m_surface,width,height);
+        m_swapchain->CreateImageViews();
+        m_swapchain->CreateFrameBuffers(m_renderPass);
+        m_swapchain->CreateCommandBuffers();
+
+        RecordCommandBuffers();
+    }
 
     ClearColorWithRenderPass(){
         CreateVulkanObjects();
@@ -263,8 +282,8 @@ int main(int argc, char** argv)
     BackendInit(argc,argv, API_TYPE_VK);
     BackendCreateWindow(SCR_WIDTH,SCR_HEIGHT,false/*isFullScreen*/,"Learn Vulkan");
 
-    // BackendRun(new ClearColorWithRenderPass);
-    BackendRun(new ClearColorWithoutRenderPass);
+    BackendRun(new ClearColorWithRenderPass);
+    // BackendRun(new ClearColorWithoutRenderPass);
 
     BackendTerminate();
     return 0;
