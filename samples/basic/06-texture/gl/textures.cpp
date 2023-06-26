@@ -68,7 +68,7 @@ public:
 private:
 
     void CreateShader(){
-        shaderProgram = new GLTechnique("shaders/4.1.texture.vert","shaders/4.1.texture.frag");
+        shaderProgram = new GLTechnique("shaders/gl-texture.vert","shaders/gl-texture.frag");
     }
 
     void CreateTexture(){

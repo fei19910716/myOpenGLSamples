@@ -64,7 +64,7 @@ public:
 private:
 
     void CreateShader(){
-        shaderProgram = new GLTechnique("shaders/3.3.shader.vert","shaders/3.3.shader.frag");
+        shaderProgram = new GLTechnique("shaders/gl-vertex-attributes.vert","shaders/gl-vertex-attributes.frag");
     }
 
 
