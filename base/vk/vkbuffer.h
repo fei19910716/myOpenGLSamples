@@ -84,14 +84,12 @@ public:
 		auto commandBuffer = VKCommandBufferPool::Instance(m_device)->AllocateCommandBuffers(1).front()->Handle();
 
 		// Put buffer region copies into command buffer
-		VkBufferCopy copyRegion = {
-			.size = m_requestSize
-		};
+		VkBufferCopy copyRegion = {};
+		copyRegion.size = m_requestSize;
 
-		VkCommandBufferBeginInfo beginInfo = {
-			.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,
-			.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT
-		};
+		VkCommandBufferBeginInfo beginInfo = {};
+		beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+		beginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
 
 		vkBeginCommandBuffer(commandBuffer, &beginInfo);
 			{

@@ -34,14 +34,13 @@ function(compile_shader target file)
 message(STATUS "compile_shader: ${file}")
 
 set(GLSLANGVALIDATOR ${CMAKE_SOURCE_DIR}/tools/glslang/glslangValidator.exe)
-get_filename_component(file_name ${file} NAME_WE)
-get_filename_component(file_ext  ${file} EXT)
+get_filename_component(file_name ${file} NAME)
 
 add_custom_command(TARGET ${target} POST_BUILD
 COMMAND
-    ${GLSLANGVALIDATOR} -V ${file} -o ${file_name}${file_ext}.spv
+    ${GLSLANGVALIDATOR} -V ${file} -o ${file_name}.spv
 COMMAND
-    ${CMAKE_COMMAND} -E copy_if_different ${file_name}${file_ext}.spv  $<TARGET_FILE_DIR:${target}>/shaders/${file_name}${file_ext}.spv
+    ${CMAKE_COMMAND} -E copy_if_different ${file_name}.spv  $<TARGET_FILE_DIR:${target}>/shaders/${file_name}.spv
 COMMENT
     "Custom command compile_shader"
 )

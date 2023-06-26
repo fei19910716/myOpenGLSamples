@@ -334,11 +334,10 @@ public:
         dynamicState.dynamicStateCount = static_cast<uint32_t>(dynamicStates.size());
         dynamicState.pDynamicStates = dynamicStates.data();
 
-        VkPushConstantRange pushConstantRange{
-            .stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT,
-            .offset = 0,
-            .size = sizeof(PushConstantData)
-        };
+        VkPushConstantRange pushConstantRange = {};;
+        pushConstantRange.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+        pushConstantRange.offset = 0;
+        pushConstantRange.size = sizeof(PushConstantData);
 
         VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
         pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
@@ -379,21 +378,18 @@ public:
     }
 
     void RecordCommandBuffers() {
-        VkCommandBufferBeginInfo beginInfo = {
-            .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,
-            .flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT
-        };
+        VkCommandBufferBeginInfo beginInfo = {};;
+        beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+        beginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
         
-        VkClearColorValue clearColor = { 0.0f, 0.2f, 0.2f, 1.0f };
-        VkClearValue clearValue = {
-            .color = clearColor
-        };
+        VkClearColorValue clearColor = { 0.0f, 0.3f, 0.0f, 1.0f };
+        VkClearValue clearValue = {};;
+        clearValue.color = clearColor;
         
-        VkImageSubresourceRange imageRange = {
-            .aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
-            .levelCount = 1,
-            .layerCount = 1
-        };
+        VkImageSubresourceRange imageRange = {};;
+        imageRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+        imageRange.levelCount = 1;
+        imageRange.layerCount = 1;
             
         for (uint i = 0 ; i < m_swapchain->ImageCount() ; i++) {
             auto commandBuffer = m_swapchain->CommandBuffer(i)->Handle();
