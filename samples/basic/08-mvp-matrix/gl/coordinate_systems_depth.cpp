@@ -2,8 +2,8 @@
 #include <GLFW/glfw3.h>
 
 #include "base/app.h"
-#include "base/technique.h"
-#include "base/texture.h"
+#include "base/gl/gltechnique.h"
+#include "base/gl/gltexture.h"
 #include "base/vertices.h"
 
 // settings
@@ -96,12 +96,12 @@ public:
 private:
 
     void CreateShader(){
-        shaderProgram = new Technique("shaders/6.2.coordinate_systems.vs","shaders/6.2.coordinate_systems.fs");
+        shaderProgram = new GLTechnique("shaders/gl-mvp-matrix.vert","shaders/gl-mvp-matrix.frag");
     }
 
     void CreateTexture(){
-        texture1 = new Texture(GL_TEXTURE_2D,Utils::getAsset("textures/container.jpg"));
-        texture2 = new Texture(GL_TEXTURE_2D,Utils::getAsset("textures/awesomeface.png"));
+        texture1 = new GLTexture(GL_TEXTURE_2D,UTILS::getAsset("textures/container.jpg"));
+        texture2 = new GLTexture(GL_TEXTURE_2D,UTILS::getAsset("textures/awesomeface.png"));
     }
 
 
@@ -113,7 +113,7 @@ private:
         glBindVertexArray(VAO);
 
         glBindBuffer(GL_ARRAY_BUFFER, VBO);
-        glBufferData(GL_ARRAY_BUFFER, sizeof(Model::CubePosTexVertices), Model::CubePosTexVertices, GL_STATIC_DRAW);
+        glBufferData(GL_ARRAY_BUFFER, sizeof(MODEL::CubePosTexVertices), MODEL::CubePosTexVertices, GL_STATIC_DRAW);
 
         // position attribute
         glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
@@ -124,8 +124,8 @@ private:
     }
 
     unsigned int VAO,VBO,EBO;
-    Technique* shaderProgram = nullptr;
-    Texture *texture1 = nullptr, *texture2 = nullptr;
+    GLTechnique* shaderProgram = nullptr;
+    GLTexture *texture1 = nullptr, *texture2 = nullptr;
 
 };
 
