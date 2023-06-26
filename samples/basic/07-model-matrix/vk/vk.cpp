@@ -14,6 +14,7 @@
 #include "base/math.h"
 
 #include <array>
+#include <GLFW/glfw3.h>
 
 // settings
 const unsigned int SCR_WIDTH = 800;
@@ -74,6 +75,8 @@ public:
         uint32_t imageIndex;
         vkAcquireNextImageKHR(m_device->Handle(), m_swapchain->Handle(), UINT64_MAX, m_imageAvailable->Handle(), VK_NULL_HANDLE, &imageIndex);
 
+        RecordSwapchainCommandBuffer(imageIndex);
+
         VkSubmitInfo submitInfo{};
         VkPipelineStageFlags waitStages[] = {VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT};
         submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
@@ -110,8 +113,6 @@ public:
         m_swapchain->CreateImageViews();
         m_swapchain->CreateFrameBuffers(m_renderPass);
         m_swapchain->CreateCommandBuffers();
-
-        RecordCommandBuffers();
     }
 
     void KeyboardCB(KEY Key, KEY_STATE KeyState = KEY_STATE_PRESS) override
@@ -130,7 +131,6 @@ public:
 
     VulkanExample(){
         CreateVulkanObjects();
-        RecordCommandBuffers();
     }
 
     ~VulkanExample(){
@@ -451,8 +451,8 @@ public:
         vkDestroyShaderModule(m_device->Handle(), vertShaderModule, nullptr);
     }
 
-    void RecordCommandBuffers() {
-        VkCommandBufferBeginInfo beginInfo = {};;
+    void RecordSwapchainCommandBuffer(uint32_t imageIndex) {
+        VkCommandBufferBeginInfo beginInfo = {};
         beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
         beginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
         
@@ -465,63 +465,61 @@ public:
         imageRange.levelCount = 1;
         imageRange.layerCount = 1;
             
-        for (uint i = 0 ; i < m_swapchain->ImageCount() ; i++) {
-            auto commandBuffer = m_swapchain->CommandBuffer(i)->Handle();
+        auto commandBuffer = m_swapchain->CommandBuffer(imageIndex)->Handle();
 
-            VkRenderPassBeginInfo renderPassBeginInfo = {};
-            renderPassBeginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-            renderPassBeginInfo.pNext = nullptr;
-            renderPassBeginInfo.renderPass = m_renderPass->Handle();
-            renderPassBeginInfo.renderArea.offset.x = 0;
-            renderPassBeginInfo.renderArea.offset.y = 0;
-            renderPassBeginInfo.renderArea.extent = m_swapchain->Extent2D();
-            renderPassBeginInfo.clearValueCount = 1;
-            renderPassBeginInfo.pClearValues = &clearValue;
-            renderPassBeginInfo.framebuffer = m_swapchain->FrameBuffer(i)->Handle();
+        VkRenderPassBeginInfo renderPassBeginInfo = {};
+        renderPassBeginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+        renderPassBeginInfo.pNext = nullptr;
+        renderPassBeginInfo.renderPass = m_renderPass->Handle();
+        renderPassBeginInfo.renderArea.offset.x = 0;
+        renderPassBeginInfo.renderArea.offset.y = 0;
+        renderPassBeginInfo.renderArea.extent = m_swapchain->Extent2D();
+        renderPassBeginInfo.clearValueCount = 1;
+        renderPassBeginInfo.pClearValues = &clearValue;
+        renderPassBeginInfo.framebuffer = m_swapchain->FrameBuffer(imageIndex)->Handle();
 
-            vkBeginCommandBuffer(commandBuffer, &beginInfo);
-                vkCmdBeginRenderPass(commandBuffer, &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
-                    // Update dynamic viewport state
-                    VkViewport viewport{};
-                    viewport.x = 0.0f;
-                    viewport.y = 0.0f;
-                    viewport.width = static_cast<float>(m_swapchain->Extent2D().width);
-                    viewport.height = static_cast<float>(m_swapchain->Extent2D().height);
-                    viewport.minDepth = 0.0f;
-                    viewport.maxDepth = 1.0f;
-                    vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
+        vkBeginCommandBuffer(commandBuffer, &beginInfo);
+            vkCmdBeginRenderPass(commandBuffer, &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
+                // Update dynamic viewport state
+                VkViewport viewport{};
+                viewport.x = 0.0f;
+                viewport.y = 0.0f;
+                viewport.width = static_cast<float>(m_swapchain->Extent2D().width);
+                viewport.height = static_cast<float>(m_swapchain->Extent2D().height);
+                viewport.minDepth = 0.0f;
+                viewport.maxDepth = 1.0f;
+                vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
 
-                    VkRect2D scissor{};
-                    scissor.offset = {0, 0};
-                    scissor.extent = m_swapchain->Extent2D();
-                    vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
+                VkRect2D scissor{};
+                scissor.offset = {0, 0};
+                scissor.extent = m_swapchain->Extent2D();
+                vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
 
-                    // Bind the rendering pipeline
-                    // The pipeline (state object) contains all states of the rendering pipeline, binding it will set all the states specified at pipeline creation time
-                    vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_pipeline->Handle());
+                // Bind the rendering pipeline
+                // The pipeline (state object) contains all states of the rendering pipeline, binding it will set all the states specified at pipeline creation time
+                vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_pipeline->Handle());
 
-                    VkDeviceSize offsets[] = {0};
-                    vkCmdBindVertexBuffers(commandBuffer, 0, 1, m_VBO->pHandle(), offsets);
+                VkDeviceSize offsets[] = {0};
+                vkCmdBindVertexBuffers(commandBuffer, 0, 1, m_VBO->pHandle(), offsets);
 
-                    vkCmdBindIndexBuffer(commandBuffer, m_IBO->Handle(), 0, VK_INDEX_TYPE_UINT16);
+                vkCmdBindIndexBuffer(commandBuffer, m_IBO->Handle(), 0, VK_INDEX_TYPE_UINT16);
 
-                    vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_pipelineLayout->Handle(), 0, 1, m_descriptorSet->pHandle(), 0, nullptr);
+                vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_pipelineLayout->Handle(), 0, 1, m_descriptorSet->pHandle(), 0, nullptr);
 
-                    glm::mat4 model = glm::mat4(1.0f); // make sure to initialize matrix to identity matrix first
-                    model = glm::rotate(model, (float)45.0f, glm::vec3(0.0f, 0.0f, 1.0f));
-                    vkCmdPushConstants(
-                        commandBuffer,
-                        m_pipelineLayout->Handle(),
-                        VK_SHADER_STAGE_VERTEX_BIT,
-                        0,
-                        sizeof(PushConstantData),
-                        glm::value_ptr(model)); 
-                    
-                    vkCmdDrawIndexed(commandBuffer, m_IBO->m_indexCount, 1, 0, 0, 0);
+                glm::mat4 model = glm::mat4(1.0f); // make sure to initialize matrix to identity matrix first
+                model = glm::rotate(model, (float)glfwGetTime(), glm::vec3(0.0f, 0.0f, 1.0f));
+                vkCmdPushConstants(
+                    commandBuffer,
+                    m_pipelineLayout->Handle(),
+                    VK_SHADER_STAGE_VERTEX_BIT,
+                    0,
+                    sizeof(PushConstantData),
+                    glm::value_ptr(model)); 
+                
+                vkCmdDrawIndexed(commandBuffer, m_IBO->m_indexCount, 1, 0, 0, 0);
 
-                vkCmdEndRenderPass(commandBuffer);
-            vkEndCommandBuffer(commandBuffer);
-        }
+            vkCmdEndRenderPass(commandBuffer);
+        vkEndCommandBuffer(commandBuffer);
         
         DEV_INFO("Command buffers record success!");
     }
