@@ -48,7 +48,7 @@ struct Vertex {
 
 
 struct PushConstantData {
-	glm::vec4 color;
+	glm::vec3 color;
 };
 
 /**
@@ -254,8 +254,8 @@ public:
             return shaderModule;
         };
 
-        auto vertShaderCode = UTILS::ReadShaderFile("shaders/shader.vert.spv");
-        auto fragShaderCode = UTILS::ReadShaderFile("shaders/shader.frag.spv");
+        auto vertShaderCode = UTILS::ReadShaderFile("shaders/vk-shader-uniform.vert.spv");
+        auto fragShaderCode = UTILS::ReadShaderFile("shaders/vk-shader-uniform.frag.spv");
 
         VkShaderModule vertShaderModule = createShaderModule(vertShaderCode);
         VkShaderModule fragShaderModule = createShaderModule(fragShaderCode);
@@ -335,7 +335,7 @@ public:
         dynamicState.pDynamicStates = dynamicStates.data();
 
         VkPushConstantRange pushConstantRange = {};;
-        pushConstantRange.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+        pushConstantRange.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
         pushConstantRange.offset = 0;
         pushConstantRange.size = sizeof(PushConstantData);
 
@@ -392,7 +392,7 @@ public:
         imageRange.layerCount = 1;
             
         for (uint i = 0 ; i < m_swapchain->ImageCount() ; i++) {
-            auto commandBuffer = m_swapchain->CommandBuffer(i)->Handle();
+            auto& commandBuffer = m_swapchain->CommandBuffer(i)->Handle();
 
             VkRenderPassBeginInfo renderPassBeginInfo = {};
             renderPassBeginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
@@ -434,10 +434,10 @@ public:
                     vkCmdPushConstants(
                         commandBuffer,
                         m_pipelineLayout->Handle(),
-                        VK_SHADER_STAGE_FRAGMENT_BIT,
+                        VK_SHADER_STAGE_VERTEX_BIT,
                         0,
                         sizeof(PushConstantData),
-                        glm::value_ptr(glm::vec4(0.0f,0.0f,1.0f,1.0f))); 
+                        glm::value_ptr(glm::vec3(0.0f,0.0f,1.0f))); 
 
 
                     vkCmdDrawIndexed(commandBuffer, m_IBO->m_indexCount, 1, 0, 0, 0);

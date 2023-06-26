@@ -47,10 +47,6 @@ struct Vertex {
     };
 
 
-struct PushConstantData {
-	glm::vec4 color;
-};
-
 /**
  * 使用PushConstant更新shader uniform变量（Not UBO）
 */
@@ -219,10 +215,10 @@ public:
     void CreateVertexBuffer(){
 
         const std::vector<Vertex> vertices = {
-            {{-0.5f, -0.5f}, {1.0f, 1.0f, 0.0f}},
-            {{0.5f, -0.5f},  {0.0f, 1.0f, 1.0f}},
-            {{0.5f, 0.5f},   {1.0f, 0.0f, 1.0f}},
-            {{-0.5f, 0.5f},  {1.0f, 1.0f, 1.0f}}
+            {{-0.5f, -0.5f}, {1.0f, 0.0f, 0.0f}},
+            {{0.5f, -0.5f},  {0.0f, 1.0f, 0.0f}},
+            {{0.5f, 0.5f},   {0.0f, 0.0f, 1.0f}},
+            {{-0.5f, 0.5f},  {0.0f, 1.0f, 0.0f}}
         };
 
         const std::vector<uint16_t> indices = {
@@ -254,8 +250,8 @@ public:
             return shaderModule;
         };
 
-        auto vertShaderCode = UTILS::ReadShaderFile("shaders/shader.vert.spv");
-        auto fragShaderCode = UTILS::ReadShaderFile("shaders/shader.frag.spv");
+        auto vertShaderCode = UTILS::ReadShaderFile("shaders/vk-vertex-attributes.vert.spv");
+        auto fragShaderCode = UTILS::ReadShaderFile("shaders/vk-vertex-attributes.frag.spv");
 
         VkShaderModule vertShaderModule = createShaderModule(vertShaderCode);
         VkShaderModule fragShaderModule = createShaderModule(fragShaderCode);
@@ -334,16 +330,11 @@ public:
         dynamicState.dynamicStateCount = static_cast<uint32_t>(dynamicStates.size());
         dynamicState.pDynamicStates = dynamicStates.data();
 
-        VkPushConstantRange pushConstantRange = {};;
-        pushConstantRange.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
-        pushConstantRange.offset = 0;
-        pushConstantRange.size = sizeof(PushConstantData);
-
+        
         VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
         pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
         pipelineLayoutInfo.setLayoutCount = 0;
-        pipelineLayoutInfo.pushConstantRangeCount  = 1;
-        pipelineLayoutInfo.pPushConstantRanges = &pushConstantRange;
+        pipelineLayoutInfo.pushConstantRangeCount  = 0;
 
         VkPipelineLayout pipelineLayout = {};;
         if (vkCreatePipelineLayout(m_device->Handle(), &pipelineLayoutInfo, nullptr, &pipelineLayout) != VK_SUCCESS) {
@@ -430,15 +421,6 @@ public:
                     vkCmdBindVertexBuffers(commandBuffer, 0, 1, m_VBO->pHandle(), offsets);
 
                     vkCmdBindIndexBuffer(commandBuffer, m_IBO->Handle(), 0, VK_INDEX_TYPE_UINT16);
-
-                    vkCmdPushConstants(
-                        commandBuffer,
-                        m_pipelineLayout->Handle(),
-                        VK_SHADER_STAGE_FRAGMENT_BIT,
-                        0,
-                        sizeof(PushConstantData),
-                        glm::value_ptr(glm::vec4(1.0f,0.0f,0.0f,1.0f)));
-
 
                     vkCmdDrawIndexed(commandBuffer, m_IBO->m_indexCount, 1, 0, 0, 0);
 

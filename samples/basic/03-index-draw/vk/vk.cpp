@@ -246,8 +246,8 @@ public:
             return shaderModule;
         };
 
-        auto vertShaderCode = UTILS::ReadShaderFile("shaders/shader.vert.spv");
-        auto fragShaderCode = UTILS::ReadShaderFile("shaders/shader.frag.spv");
+        auto vertShaderCode = UTILS::ReadShaderFile("shaders/vk-index-draw.vert.spv");
+        auto fragShaderCode = UTILS::ReadShaderFile("shaders/vk-index-draw.frag.spv");
 
         VkShaderModule vertShaderModule = createShaderModule(vertShaderCode);
         VkShaderModule fragShaderModule = createShaderModule(fragShaderCode);
