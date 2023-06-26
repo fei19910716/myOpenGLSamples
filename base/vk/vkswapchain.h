@@ -87,8 +87,7 @@ public:
         }
 
         for(auto buffer: m_commandBuffers){
-            VKCommandBufferPool* pool = VKCommandBufferPool::Instance(m_device);
-            pool->FreeCommandBuffer(buffer);
+            VKCommandBufferPool::Instance(m_device)->FreeCommandBuffer(buffer->Handle());;
         }
 
         vkDestroySwapchainKHR(m_device->Handle(),handle,nullptr);

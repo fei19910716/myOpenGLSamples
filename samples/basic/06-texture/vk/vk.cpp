@@ -8,43 +8,52 @@
 #include "base/vk/vkvertexbuffer.h"
 #include "base/vk/vkindexbuffer.h"
 #include "base/vk/vkgraphicspipeline.h"
+#include "base/vk/vkdescriptorset.h"
+#include "base/vk/vkimageview.h"
+#include "base/vk/vkimagesampler.h"
 #include "base/math.h"
 
-
+#include <array>
 
 // settings
 const unsigned int SCR_WIDTH = 800;
 const unsigned int SCR_HEIGHT = 600;
 
 struct Vertex {
-        glm::vec2 pos;
-        glm::vec3 color;
+    glm::vec2 pos;
+    glm::vec3 color;
+    glm::vec2 texCoord;
 
-        static VkVertexInputBindingDescription getBindingDescription() {
-            VkVertexInputBindingDescription bindingDescription{};
-            bindingDescription.binding = 0;
-            bindingDescription.stride = sizeof(Vertex);
-            bindingDescription.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
+    static VkVertexInputBindingDescription getBindingDescription() {
+        VkVertexInputBindingDescription bindingDescription{};
+        bindingDescription.binding = 0;
+        bindingDescription.stride = sizeof(Vertex);
+        bindingDescription.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
 
-            return bindingDescription;
-        }
+        return bindingDescription;
+    }
 
-        static std::vector<VkVertexInputAttributeDescription> getAttributeDescriptions() {
-            std::vector<VkVertexInputAttributeDescription> attributeDescriptions(2);
+    static std::array<VkVertexInputAttributeDescription, 3> getAttributeDescriptions() {
+        std::array<VkVertexInputAttributeDescription, 3> attributeDescriptions{};
 
-            attributeDescriptions[0].binding = 0;
-            attributeDescriptions[0].location = 0;
-            attributeDescriptions[0].format = VK_FORMAT_R32G32_SFLOAT;
-            attributeDescriptions[0].offset = offsetof(Vertex, pos);
+        attributeDescriptions[0].binding = 0;
+        attributeDescriptions[0].location = 0;
+        attributeDescriptions[0].format = VK_FORMAT_R32G32_SFLOAT;
+        attributeDescriptions[0].offset = offsetof(Vertex, pos);
 
-            attributeDescriptions[1].binding = 0;
-            attributeDescriptions[1].location = 1;
-            attributeDescriptions[1].format = VK_FORMAT_R32G32B32_SFLOAT;
-            attributeDescriptions[1].offset = offsetof(Vertex, color);
+        attributeDescriptions[1].binding = 0;
+        attributeDescriptions[1].location = 1;
+        attributeDescriptions[1].format = VK_FORMAT_R32G32B32_SFLOAT;
+        attributeDescriptions[1].offset = offsetof(Vertex, color);
 
-            return attributeDescriptions;
-        }
-    };
+        attributeDescriptions[2].binding = 0;
+        attributeDescriptions[2].location = 2;
+        attributeDescriptions[2].format = VK_FORMAT_R32G32_SFLOAT;
+        attributeDescriptions[2].offset = offsetof(Vertex, texCoord);
+
+        return attributeDescriptions;
+    }
+};
 
 
 /**
@@ -157,9 +166,72 @@ public:
         CreateVertexBuffer();
         DEV_INFO("create vertexbuffer success!");
 
+        CreateTextureImage();
+        DEV_INFO("create texture success!");
+
+        CreateDescriptorSet();
+        DEV_INFO("create descriptor set success!");
+
         CreateGraphicsPipeline();
         DEV_INFO("create pipeline success!");
     }
+
+    
+    void CreateDescriptorSet() {
+
+        VkDescriptorSetLayoutBinding samplerLayoutBinding{};
+        samplerLayoutBinding.binding = 0;
+        samplerLayoutBinding.descriptorCount = 1;
+        samplerLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+        samplerLayoutBinding.pImmutableSamplers = nullptr;
+        samplerLayoutBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+
+        m_descriptorSetLayout = new VKDescriptorSetLayout(m_device, {samplerLayoutBinding});
+
+
+        VkDescriptorPoolSize poolSize{};
+        poolSize.type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+        poolSize.descriptorCount = 1;
+
+        m_descriptorPool = new VKDescriptorSetPool(m_device, {poolSize}, 1);
+
+
+        m_descriptorSet = m_descriptorPool->AllocateDescriptorSets({m_descriptorSetLayout});
+        
+        VkDescriptorImageInfo imageInfo{};
+        imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+        imageInfo.imageView = m_textureView->Handle();
+        imageInfo.sampler = m_textureSampler->Handle();
+
+        m_descriptorSet->UpdateImage(0, imageInfo);
+    }
+
+    void CreateTextureImage() {
+        VKImage* texture = new VKImage(m_device,UTILS::getAsset("textures/container.jpg"));
+
+        m_textureView = new VKImageView(m_device, texture, VK_FORMAT_R8G8B8A8_SRGB);
+
+        VkPhysicalDeviceProperties properties{};
+        vkGetPhysicalDeviceProperties(m_device->PhysicalDevice()->Handle(), &properties);
+
+        VkSamplerCreateInfo samplerInfo{};
+        samplerInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
+        samplerInfo.magFilter = VK_FILTER_LINEAR;
+        samplerInfo.minFilter = VK_FILTER_LINEAR;
+        samplerInfo.addressModeU = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+        samplerInfo.addressModeV = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+        samplerInfo.addressModeW = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+        samplerInfo.anisotropyEnable = VK_TRUE;
+        samplerInfo.maxAnisotropy = properties.limits.maxSamplerAnisotropy;
+        samplerInfo.borderColor = VK_BORDER_COLOR_INT_OPAQUE_BLACK;
+        samplerInfo.unnormalizedCoordinates = VK_FALSE;
+        samplerInfo.compareEnable = VK_FALSE;
+        samplerInfo.compareOp = VK_COMPARE_OP_ALWAYS;
+        samplerInfo.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
+
+        m_textureSampler = new VKImageSampler(m_device,samplerInfo);
+    }
+
 
     void CreateRenderpass(){
         VkAttachmentDescription attachment = {};
@@ -214,11 +286,12 @@ public:
 
     void CreateVertexBuffer(){
 
-        const std::vector<Vertex> vertices = {
-            {{-0.5f, -0.5f}, {1.0f, 0.0f, 0.0f}},
-            {{0.5f, -0.5f}, {1.0f, 0.0f, 0.0f}},
-            {{0.5f, 0.5f}, {1.0f, 0.0f, 0.0f}},
-            {{-0.5f, 0.5f}, {1.0f, 0.0f, 0.0f}}
+        const std::vector<Vertex> vertices = 
+        {
+            {{-0.5f, -0.5f}, {1.0f, 0.0f, 0.0f}, {1.0f, 0.0f}},
+            {{0.5f, -0.5f}, {1.0f, 0.0f, 0.0f}, {0.0f, 0.0f}},
+            {{0.5f, 0.5f}, {1.0f, 0.0f, 0.0f}, {0.0f, 1.0f}},
+            {{-0.5f, 0.5f}, {1.0f, 0.0f, 0.0f}, {1.0f, 1.0f}}
         };
 
         const std::vector<uint16_t> indices = {
@@ -250,8 +323,8 @@ public:
             return shaderModule;
         };
 
-        auto vertShaderCode = UTILS::ReadShaderFile("shaders/vk-vertex-attributes.vert.spv");
-        auto fragShaderCode = UTILS::ReadShaderFile("shaders/vk-vertex-attributes.frag.spv");
+        auto vertShaderCode = UTILS::ReadShaderFile("shaders/vk-texture.vert.spv");
+        auto fragShaderCode = UTILS::ReadShaderFile("shaders/vk-texture.frag.spv");
 
         VkShaderModule vertShaderModule = createShaderModule(vertShaderCode);
         VkShaderModule fragShaderModule = createShaderModule(fragShaderCode);
@@ -333,7 +406,8 @@ public:
         
         VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
         pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-        pipelineLayoutInfo.setLayoutCount = 0;
+        pipelineLayoutInfo.setLayoutCount = 1;
+        pipelineLayoutInfo.pSetLayouts = m_descriptorSetLayout->pHandle();
         pipelineLayoutInfo.pushConstantRangeCount  = 0;
 
         VkPipelineLayout pipelineLayout = {};;
@@ -374,7 +448,7 @@ public:
         beginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
         
         VkClearColorValue clearColor = { 0.0f, 0.3f, 0.0f, 1.0f };
-        VkClearValue clearValue = {};;
+        VkClearValue clearValue = {};
         clearValue.color = clearColor;
         
         VkImageSubresourceRange imageRange = {};;
@@ -422,6 +496,8 @@ public:
 
                     vkCmdBindIndexBuffer(commandBuffer, m_IBO->Handle(), 0, VK_INDEX_TYPE_UINT16);
 
+                    vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_pipelineLayout->Handle(), 0, 1, m_descriptorSet->pHandle(), 0, nullptr);
+
                     vkCmdDrawIndexed(commandBuffer, m_IBO->m_indexCount, 1, 0, 0, 0);
 
                 vkCmdEndRenderPass(commandBuffer);
@@ -444,6 +520,13 @@ private:
     VKIndexBuffer*      m_IBO = nullptr;
     VKFence*            m_fence;
     VKSemaphore*        m_imageAvailable = nullptr, *m_renderFinish = nullptr;
+
+    VKDescriptorSetPool*    m_descriptorPool;
+    VKDescriptorSet*        m_descriptorSet;
+    VKDescriptorSetLayout*  m_descriptorSetLayout;
+
+    VKImageView*  m_textureView;
+    VKImageSampler* m_textureSampler;
 };
 
 int main(int argc, char** argv)
