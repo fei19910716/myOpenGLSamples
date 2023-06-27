@@ -6,7 +6,6 @@ set(external_libs
     glad
     glfw
 
-    vulkan
     stb
     assimp
     glm

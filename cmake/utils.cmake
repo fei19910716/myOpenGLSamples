@@ -30,24 +30,6 @@ COMMENT
 endfunction(copy_shader target file)
 
 
-function(compile_shader target file)
-message(STATUS "compile_shader: ${file}")
-
-set(GLSLANGVALIDATOR ${CMAKE_SOURCE_DIR}/tools/glslang/glslangValidator.exe)
-get_filename_component(file_name ${file} NAME)
-
-add_custom_command(TARGET ${target} POST_BUILD
-COMMAND
-    ${GLSLANGVALIDATOR} -V ${file} -o ${file_name}.spv
-COMMAND
-    ${CMAKE_COMMAND} -E copy_if_different ${file_name}.spv  $<TARGET_FILE_DIR:${target}>/shaders/${file_name}.spv
-COMMENT
-    "Custom command compile_shader"
-)
-endfunction(compile_shader target file)
-
-
-
 function(copy_dll target file)
 get_filename_component(file_name ${file} NAME)
 add_custom_target(copy_${target} ALL
@@ -79,24 +61,13 @@ add_executable(${target} ${src_files})
 
 target_link_libraries(${target} PUBLIC base)
 
-string(FIND ${target} "vk" VK_INDEX)
-if(${VK_INDEX} GREATER 0)
-    if(WIN32)
-        target_compile_definitions(${target} PUBLIC VK_USE_PLATFORM_WIN32_KHR)
-    endif()
-endif()
-
 file(GLOB shader_files
 ${dir}/*.vert
 ${dir}/*.frag)
 
 
 foreach(shader_file ${shader_files})
-    if(${VK_INDEX} GREATER 0)
-        compile_shader(${target} ${shader_file})
-    else()
-        copy_shader(${target} ${shader_file})
-    endif()
+copy_shader(${target} ${shader_file})
 endforeach()
 
 endfunction(add_target dir)
